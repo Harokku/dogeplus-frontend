@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  '@solid-primitives/websocket':
+    specifier: ^1.2.0
+    version: 1.2.0(solid-js@1.8.11)
   luxon:
     specifier: ^3.4.4
     version: 3.4.4
@@ -747,6 +750,14 @@ packages:
     requiresBuild: true
     dev: true
     optional: true
+
+  /@solid-primitives/websocket@1.2.0(solid-js@1.8.11):
+    resolution: {integrity: sha512-Ft74wlLD/zrOSDUq4zMDDEs4Bf7ywQO52zOMQqijLYZ9ndvepje5Eb1xiFGnfZ2kcbKaLUfnqIQxVZVB7FGnPQ==}
+    peerDependencies:
+      solid-js: ^1.6.12
+    dependencies:
+      solid-js: 1.8.11
+    dev: false
 
   /@types/babel__core@7.20.5:
     resolution: {integrity: sha512-qoQprZvz5wQFJwMDqeseRXWv3rqMvhgpbXFfVyWhbx9X47POIA6i/+dXefEmZKoAgOaTdaIgNSMqMIU61yRyzA==}
