@@ -11,22 +11,23 @@ function App() {
         <>
             <ConfigFlow />
 
+            <br/><hr/>
             <pre>
                 {JSON.stringify({
                     username: store.username.value,
                     central: store.central.value,
                     categories: store.categories.value,
-                })}
+                },null, 1)}
             </pre>
 
-            <ErrorBoundary fallback={err => <p>Error fetching: {err.message}</p>}>
-                <TaskList/>
-            </ErrorBoundary>
+            {/*<ErrorBoundary fallback={err => <p>Error fetching: {err.message}</p>}>*/}
+            {/*    <TaskList/>*/}
+            {/*</ErrorBoundary>*/}
 
-            <button class="btn" onClick={() =>
-                setStore(task => task.id === 3, {operator: "Him!", isDone: 2, assignedTo: "Flotta"})}
-            >Update 3rd
-            </button>
+            {/*<button class="btn" onClick={() =>*/}
+            {/*    setStore(task => task.id === 3, {operator: "Him!", isDone: 2, assignedTo: "Flotta"})}*/}
+            {/*>Update 3rd*/}
+            {/*</button>*/}
 
         </>
     )

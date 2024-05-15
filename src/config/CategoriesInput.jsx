@@ -1,7 +1,7 @@
 import {createSignal} from "solid-js";
 import store from "../store/store.js";
 
-function ItemSelection({next}) {
+function ItemSelection() {
     const [selectedItems, setSelectedItems] = createSignal([]);
 
     // Mock items array
@@ -23,7 +23,6 @@ function ItemSelection({next}) {
         e.preventDefault();
         // Save the selected items in store
         store.categories.set(selectedItems());
-        next()
     }
 
     return (

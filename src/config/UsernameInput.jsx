@@ -1,7 +1,7 @@
 import {createSignal} from "solid-js";
 import store from "../store/store.js";
 
-function UsernameInput({next}) {
+function UsernameInput() {
     const [name, setName] = createSignal("");
 
     const handleOnChange = (e) => {
@@ -12,7 +12,6 @@ function UsernameInput({next}) {
         e.preventDefault();
         // Save the username in store
         store.username.set(name())
-        next()
     }
 
     return (
