@@ -1,9 +1,9 @@
-import store from "../store/store.js";
+import {configStore} from "../store/configStore.js";
 import {createSignal} from "solid-js";
 
-function CentralIdInput({next}) {
-    const [id, setId] = createSignal(""); // List of mock IDs
-    const ids = ["SRA", "SRL", "SRM", "SRP"];
+function CentralIdInput() {
+    const [id, setId] = createSignal("");
+    const ids = ["SRA", "SRL", "SRM", "SRP"]; // List of mock IDs
 
     const handleOnChange = (e) => {
         setId(e.target.value);
@@ -12,8 +12,7 @@ function CentralIdInput({next}) {
     const handleOnSubmit = (e) => {
         e.preventDefault();
         // Save the chosen ID in store
-        store.central.set(id())
-        next()
+        configStore.central.set(id())
     }
 
     return (

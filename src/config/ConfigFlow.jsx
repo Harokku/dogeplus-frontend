@@ -1,18 +1,18 @@
 import UsernameInput from "./UsernameInput";
 import CentralIdInput from "./CentralIdInput";
-import CategoriesInput from "./CategoriesInput.jsx";
-import store from "../store/store.js";
+import {configStep, configStore} from "../store/configStore.js";
+import EventNrInput from "./EventNrInput.jsx";
 
 function ConfigFlow() {
     const getCurrentStep = () => {
-        switch (store.getCurrentStep()) {
-            case 'username':
+        switch (configStore.getCurrentStep()) {
+            case configStep.USERNAME:
                 return <UsernameInput/>;
-            case 'central':
+            case configStep.CENTRAL:
                 return <CentralIdInput/>;
-            case 'categories':
-                return <CategoriesInput/>;
-            case 'finished':
+            case configStep.EVENTNR:
+                return <EventNrInput/>
+            case configStep.FINISHED:
                 return <p>All completed</p>
         }
     }

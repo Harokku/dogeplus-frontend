@@ -5,12 +5,31 @@ import {createEffect, createRoot, createSignal} from 'solid-js';
  * @type {Object}
  * @property {string} USERNAME - The key for the username storage value.
  * @property {string} CENTRAL - The key for the central storage value.
+ * @property {string} EVENTNR - The key for the event number value.
  * @property {string} CATEGORIES - The key for the categories storage value.
  */
 const storageKeys = Object.freeze({
     USERNAME: 'store_username',
     CENTRAL: 'store_central',
+    EVENTNR: 'store_eventnr',
     CATEGORIES: 'store_categories',
+})
+
+/**
+ * Immutable object representing the configuration step.
+ *
+ * @constant
+ * @type {Object}
+ * @property {string} USERNAME - The username configuration step.
+ * @property {string} CENTRAL - The central configuration step.
+ * @property {string} EVENTNR - The event number configuration step.
+ * @property {string} FINISHED - The end of config process
+ */
+const configStep = Object.freeze({
+    USERNAME: 'username',
+    CENTRAL: 'central',
+    EVENTNR: 'eventnr',
+    FINISHED: 'finished',
 })
 
 
@@ -41,9 +60,10 @@ const getFromStorage = (key, defaultValue) => {
  * @property {Array} categories.value - The current value of the categories.
  * @property {function} categories.set - Sets the value of the categories.
  */
-let store = createRoot(() => {
+let configStore = createRoot(() => {
     const [username, setUsername] = createSignal(getFromStorage(storageKeys.USERNAME, null));
     const [central, setCentral] = createSignal(getFromStorage(storageKeys.CENTRAL, null));
+    const [eventNr, setEventNr] = createSignal(getFromStorage(storageKeys.EVENTNR, null));
     const [categories, setCategories] = createSignal(getFromStorage(storageKeys.CATEGORIES, null));
 
     // persist the username
@@ -52,8 +72,25 @@ let store = createRoot(() => {
     })
 
     // persist centralID
+    // automatically clear subsequent config values if this change
+    let prevCentral = central() // Storing previous value to be checked inside effect
     createEffect(() => {
+        // If central has changed, clear out event number and categories
+        if (central() !== prevCentral) {
+            setEventNr(null)
+            setCategories(null)
+        }
+
+        // Update prev central for next check
+        prevCentral = central()
+
+        // Update localstorage with new value
         localStorage.setItem(storageKeys.CENTRAL, JSON.stringify(central()));
+    })
+
+    // persist event  umber
+    createEffect(() => {
+        localStorage.setItem(storageKeys.EVENTNR, JSON.stringify(eventNr()));
     })
 
     // persist the categories
@@ -76,6 +113,13 @@ let store = createRoot(() => {
             set: setCentral,
         },
 
+        eventNr: {
+            get value() {
+                return eventNr()
+            },
+            set: setEventNr,
+        },
+
         categories: {
             get value() {
                 return categories()
@@ -85,17 +129,19 @@ let store = createRoot(() => {
 
         getCurrentStep: () => {
             if (username() === null) {
-                return 'username'
+                return configStep.USERNAME
             }
             if (central() === null) {
-                return 'central'
+                return configStep.CENTRAL
             }
-            if (categories() === null) {
-                return 'categories'
+            if (eventNr() === null) {
+                return configStep.EVENTNR
             }
-            return 'finished'
+            return configStep.FINISHED
         },
     };
 });
 
-export default store;
+// export default configStore;
+
+export {configStore, configStep};

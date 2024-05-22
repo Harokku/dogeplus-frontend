@@ -1,5 +1,5 @@
 import {createSignal} from "solid-js";
-import store from "../store/store.js";
+import {configStore} from "../store/configStore.js";
 
 function ItemSelection() {
     const [selectedItems, setSelectedItems] = createSignal([]);
@@ -22,7 +22,7 @@ function ItemSelection() {
     const handleOnSubmit = (e) => {
         e.preventDefault();
         // Save the selected items in store
-        store.categories.set(selectedItems());
+        configStore.categories.set(selectedItems());
     }
 
     return (

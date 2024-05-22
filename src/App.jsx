@@ -2,7 +2,7 @@ import './App.css'
 import TaskList from "./itemlist/TaskList.jsx";
 import {ErrorBoundary} from "solid-js";
 import ConfigFlow from "./config/ConfigFlow.jsx";
-import store from "./store/store.js";
+import {configStore} from "./store/configStore.js";
 
 
 function App() {
@@ -14,9 +14,10 @@ function App() {
             <br/><hr/>
             <pre>
                 {JSON.stringify({
-                    username: store.username.value,
-                    central: store.central.value,
-                    categories: store.categories.value,
+                    username: configStore.username.value,
+                    central: configStore.central.value,
+                    eventNr: configStore.eventNr.value,
+                    categories: configStore.categories.value,
                 },null, 1)}
             </pre>
 

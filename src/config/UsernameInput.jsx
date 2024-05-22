@@ -1,5 +1,5 @@
 import {createSignal} from "solid-js";
-import store from "../store/store.js";
+import {configStore} from "../store/configStore.js";
 
 function UsernameInput() {
     const [name, setName] = createSignal("");
@@ -11,7 +11,7 @@ function UsernameInput() {
     const handleOnSubmit = (e) => {
         e.preventDefault();
         // Save the username in store
-        store.username.set(name())
+        configStore.username.set(name())
     }
 
     return (
