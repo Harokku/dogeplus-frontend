@@ -1,17 +1,19 @@
 import {createStore} from "solid-js/store";
-import {createEffect, createMemo, ErrorBoundary, For, onMount} from "solid-js";
+import {createEffect, createMemo, For, onMount} from "solid-js";
 import Task from "./Task.jsx";
 import {
     createReconnectingWS,
     createWSState,
     makeHeartbeatWS
 } from "@solid-primitives/websocket";
+import {config} from "../dataService/config.js";
+import {getActiveEvent} from "../dataService/dataService.js";
 
 function TaskList() {
 
     // Create a reconnecting ws socket with heartbeat and set connection status
     const socket = makeHeartbeatWS(
-        createReconnectingWS(`ws://localhost:3000/api/v1/ws`, undefined, {delay: 10000}),
+        createReconnectingWS(config.wsUrl, undefined, {delay: 10000}),
         {message: "ping", interval: 5000, wait: 7500}
     )
     const state = createWSState(socket);
@@ -55,18 +57,19 @@ function TaskList() {
      * @throws {Error} If an error occurs while fetching the data from the backend.
      */
     const fetchData = async () => {
-        const res = await fetch('http://127.0.0.1:3000/api/v1/events')
-
-        if (!res.ok) {
-            throw new Error(`Error fetching task list from backend:\t${res.status}`)
+        const response = await getActiveEvent(false)
+        if (response.result) {
+            setTaskStore(response.data.Tasks)
         }
-        const data = await res.json()
-
-        setTaskStore(data)
     }
 
     // Fetch task list from backend
     onMount(fetchData)
+
+    // Update specific task function
+    const updateSpecificTask = (updatedTask) => {
+
+    }
 
     /**
      * Creates a memoized function to group tasks by the assigned person.
@@ -76,7 +79,7 @@ function TaskList() {
      */
     const groupedTasks = createMemo(() =>
         taskStore.reduce((groups, task) => {
-            let key = task.assignedTo;
+            let key = task.role;
             if (!groups[key]) {
                 groups[key] = [];
             }
@@ -95,16 +98,17 @@ function TaskList() {
                     {([key, item]) =>
                         <div>
                             <div
-                                class="p-2 max-w-sm mx-auto bg-white rounded-xl shadow-md flex items-center justify-center space-x-4">
-                                <div class="text-xl font-medium text-black text-center">
+                                class="p-2 max-w-sm mx-auto  rounded-xl shadow-md flex items-center justify-center space-x-4 glass">
+                                <div class="text-xl font-medium text-white text-center">
                                     {key}
                                 </div>
                             </div>
                             {/*Iterate each assignee task and show an item for every task in the array*/}
                             <For each={item}>
                                 {(task) =>
-                                    <Task {...task}/>
-                                }</For>
+                                    <Task {...task} updateSpecificTask={updateSpecificTask} />
+                                }
+                            </For>
                         </div>
                     }</For>
             </div>

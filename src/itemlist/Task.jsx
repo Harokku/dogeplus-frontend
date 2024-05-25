@@ -1,7 +1,24 @@
 import {DateTime} from 'luxon';
 import {Show} from "solid-js";
+import {configStore} from "../store/configStore.js";
+import {updateActiveEvent} from "../dataService/updateTaskService.js";
+import {addNotification, notificationPriorities} from "../store/notificationStore.js";
 
 function Task(props) {
+
+    /**
+     * Possible statuses for a variable.
+     *
+     * @typedef {Object} Statuses
+     * @property {string} NOTDONE - Represents the not done status.
+     * @property {string} WORKING - Represents the working status.
+     * @property {string} DONE - Represents the done status.
+     */
+    const statuses = Object.freeze({
+        NOTDONE: 'notdone',
+        WORKING: 'working',
+        DONE: 'done'
+    })
 
     /**
      * Represents the possible actions that can be marked as "done".
@@ -24,8 +41,8 @@ function Task(props) {
      * @returns {boolean} - True if controls should be shown, false otherwise.
      */
     const showControls = () => {
-        switch (props.isDone) {
-            case 2:
+        switch (props.status) {
+            case statuses.WORKING:
                 return true
             default:
                 return false
@@ -38,12 +55,12 @@ function Task(props) {
      * @returns {string} - The background color class based on the state.
      */
     const getBgColor = () => {
-        switch (props.isDone) {
-            case 0:
+        switch (props.status) {
+            case statuses.NOTDONE:
                 return 'alert-info'
-            case 1:
+            case statuses.DONE:
                 return 'alert-success'
-            case 2:
+            case statuses.WORKING:
                 return 'alert-warning'
             default:
                 return ''
@@ -56,20 +73,20 @@ function Task(props) {
      * @returns {JSX.Element} - The icon component.
      */
     const getIcon = () => {
-        switch (props.isDone) {
-            case 0:
+        switch (props.status) {
+            case statuses.NOTDONE:
                 return <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3"
                             stroke="currentColor" class="w-6 h-6">
                     <path stroke-linecap="round" stroke-linejoin="round"
                           d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"/>
                 </svg>
-            case 1:
+            case statuses.DONE:
                 return <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3"
                             stroke="currentColor" class="w-6 h-6">
                     <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>
                 </svg>
 
-            case 2:
+            case statuses.WORKING:
                 return <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3"
                             stroke="currentColor" class="w-6 h-6">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -92,15 +109,15 @@ function Task(props) {
      */
     const getUserTimestamp = () => {
         // Get operator from props or set to default
-        const operator = (props && 'operator' in props)
-            ? props.operator
+        const operator = (props?.modified_by?.trim() !== "")
+            ? props.modified_by
             : 'no one'
 
         let parsedDate // Datetime parsed from props
         // Get timestamp from props or set to null
         if (props && 'timestamp' in props) {
-            props.timestamp.Valid
-                ? parsedDate = DateTime.fromISO(props.timestamp.Time)
+            props.timestamp
+                ? parsedDate = DateTime.fromISO(props.timestamp)
                 : parsedDate = null
         }
         // If parsedDate is not null format it ore set a default
@@ -115,53 +132,44 @@ function Task(props) {
         let nextDoneState // Next state to send to backend
         let user // Operator name from localstorage
 
+
         // If pristine -> set next state to managing
-        if (props.isDone === 0) {
-            nextDoneState = 2
+        if (props.status === statuses.NOTDONE) {
+            nextDoneState = statuses.WORKING
         }
 
         // I already accomplished do nothing and abort the request process
-        if (props.isDone === 1) {
+        if (props.status === statuses.DONE) {
             return
         }
 
         // If is in management -> set next state based on user's clicked button
-        if (props.isDone === 2 && done === doneActions.SEND) {
-            nextDoneState = 1
-        } else if (props.isDone === 2 && done === doneActions.ABORT) {
-            nextDoneState = 0
-        } else if (props.isDone === 2) {
+        if (props.status === statuses.WORKING && done === doneActions.SEND) {
+            nextDoneState = statuses.DONE
+        } else if (props.status === statuses.WORKING && done === doneActions.ABORT) {
+            nextDoneState = statuses.NOTDONE
+        } else if (props.isDone === statuses.WORKING) {
             return
         }
 
         // If at this point the next state is still undefined abort the request process
         if (nextDoneState === undefined) return
 
-        // Get user from localstorage, default to 'No one' if not found
-        user = localStorage.getItem("username") || 'No one'
+        // Get user from config storage
+        user = configStore.username.value
 
-        // TODO: Write better error handling
-        try {
-            const response = await fetch('http://localhost:3000/api/v1/events/setDone', {
-                method: 'PUT',
-                body: JSON.stringify({
-                    id: props.id,
-                    operator: user,
-                    isDone: nextDoneState
-                }),
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-            });
+        const data = {
+            uuid: props.uuid,
+            status: nextDoneState,
+            modified_by: user,
+        }
+        const response = await updateActiveEvent(data, false)
 
-            if (!response.ok) {
-                throw new Error("HTTP error " + response.status);
-            }
-
-            const json = await response.json();
-            console.log(json);
-        } catch (err) {
-            console.error('Request failed', err);
+        if (response.result) {
+            addNotification(`Task ${response.data.title} completato`, notificationPriorities.SUCCESS)
+        } else {
+            console.error(response.error)
+            addNotification(`Errore salvataggio task`, notificationPriorities.ERROR)
         }
     }
 
@@ -173,21 +181,28 @@ function Task(props) {
                 {getIcon()}
                 {/*Task text, modded by, timestamp and description*/}
                 <div class="relative flex-grow">
-                    <h3 class="font-bold">{props.task}</h3>
+                    <h3 class="font-bold">{props.title}</h3>
+                    <Show when={props?.status === statuses.WORKING}>
+                        <p>{props.description}</p>
+                    </Show>
+
+                    {/*Action buttons*/}
+                    {/*Visible only in on managing state (2)*/}
+                    <Show when={showControls()}>
+                        <div>
+                            <button class="btn btn-sm btn-success"
+                                    onClick={() => putDoneState(doneActions.SEND)}>Completato
+                            </button>
+                            <button class="btn btn-sm btn-error" onClick={() => putDoneState(doneActions.ABORT)}>Annulla
+                            </button>
+                        </div>
+                    </Show>
+
                     {/*Don't show in normal state (0)*/}
-                    <Show when={props.isDone === 1 || props.isDone === 2}>
-                        <p class="absolute text-sm right-0 text-gray-300">{getUserTimestamp()}</p></Show>
+                    <Show when={props.status === statuses.DONE || props.status === statuses.WORKING}>
+                        <p class="badge badge-ghost absolute text-sm right-0 text-gray-300">{getUserTimestamp()}</p>
+                    </Show>
                 </div>
-                {/*Action buttons*/}
-                {/*Visible only in on managing state (2)*/}
-                <Show when={showControls()}>
-                    <div>
-                        <button class="btn btn-sm btn-success" onClick={() => putDoneState(doneActions.SEND)}>Completato
-                        </button>
-                        <button class="btn btn-sm btn-error" onClick={() => putDoneState(doneActions.ABORT)}>Annulla
-                        </button>
-                    </div>
-                </Show>
             </div>
         </>
     );

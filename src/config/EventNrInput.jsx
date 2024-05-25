@@ -1,4 +1,4 @@
-import {createSignal, For, Match, onMount, Show} from "solid-js";
+import {createSignal, For, onMount, Show} from "solid-js";
 import {configStore} from "../store/configStore.js";
 import {bgColor, textColor} from "../theme/bg.js";
 import {getActiveEvents} from "../dataService/dataService.js";

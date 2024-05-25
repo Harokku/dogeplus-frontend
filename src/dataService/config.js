@@ -3,7 +3,7 @@
  * The base URL for the server.
  * @type {string}
  */
-const baseUrl= 'http://localhost:3000'
+const baseUrl= 'localhost:3000'
 
 /**
  * Represents the version of the API.
@@ -18,5 +18,6 @@ const apiVersion= 'v1'
  * @property {string} backendURL - The backend URL.
  */
 export const config = {
-    backendURL: `${baseUrl}/api/${apiVersion}`,
+    backendURL: `http://${baseUrl}/api/${apiVersion}`,
+    wsUrl: `ws://${baseUrl}/api/${apiVersion}/ws`,
 }

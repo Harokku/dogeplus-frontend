@@ -1,20 +1,21 @@
 import {config} from "./config.js";
 import {configStore} from "../store/configStore.js";
+import {createDataService} from "./dataService.js";
 
-export async function getActiveEvents(useMock = false) {
-    try {
-        let data
-        if (useMock) {
-            data = getMockData()
-        } else {
-            data = await getBackendData()
-        }
-        return {result: true, data}
-    } catch (error) {
-        console.error(error)
-        return {result: false, error}
-    }
-}
+// export async function getActiveEvents(useMock = false) {
+//     try {
+//         let data
+//         if (useMock) {
+//             data = getMockData()
+//         } else {
+//             data = await getBackendData()
+//         }
+//         return {result: true, data}
+//     } catch (error) {
+//         console.error(error)
+//         return {result: false, error}
+//     }
+// }
 
 function getMockData() {
     return ({
@@ -39,3 +40,15 @@ async function getBackendData() {
     }
     return await response.json()
 }
+
+/**
+ * Creates a function called getActiveEvents that returns active events data.
+ *
+ * @function getActiveEvents
+ *
+ * @param {Function} getBackendData - The function to retrieve data from the backend.
+ * @param {Function} getMockData - The function to retrieve mock data for testing.
+ *
+ * @returns {Function} - The getActiveEvents function.
+ */
+export const getActiveEvents = createDataService(getBackendData, getMockData)

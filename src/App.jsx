@@ -3,12 +3,14 @@ import TaskList from "./itemlist/TaskList.jsx";
 import {ErrorBoundary} from "solid-js";
 import ConfigFlow from "./config/ConfigFlow.jsx";
 import {configStore} from "./store/configStore.js";
+import NotificationContainer from "./NotificationContainer.jsx";
 
 
 function App() {
 
     return (
         <>
+            <NotificationContainer/>
             <ConfigFlow />
 
             <br/><hr/>
