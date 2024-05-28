@@ -3,6 +3,7 @@ import CentralIdInput from "./CentralIdInput";
 import {configStep, configStore} from "../store/configStore.js";
 import EventNrInput from "./EventNrInput.jsx";
 import TaskList from "../itemlist/TaskList.jsx";
+import CategoriesInput from "./CategoriesInput.jsx";
 
 function ConfigFlow() {
     const getCurrentStep = () => {
@@ -11,6 +12,8 @@ function ConfigFlow() {
                 return <UsernameInput/>;
             case configStep.CENTRAL:
                 return <CentralIdInput/>;
+            case configStep.NEWEVENT:
+                return <CategoriesInput/>
             case configStep.EVENTNR:
                 return <EventNrInput/>
             case configStep.FINISHED:

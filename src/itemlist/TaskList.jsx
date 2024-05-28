@@ -39,9 +39,8 @@ function TaskList() {
         } catch (err) {
 
         }
-        if (data?.channel === "Event" && data?.msgType === "Updated") {
-            console.log(data)
-            setTaskStore(task => task.id === data?.msg.id, data?.msg)
+        if (data?.Result ==="Event Task Updated") {
+            setTaskStore(task => task.uuid === data?.Events.uuid, data?.Events)
         }
     });
 
@@ -65,11 +64,6 @@ function TaskList() {
 
     // Fetch task list from backend
     onMount(fetchData)
-
-    // Update specific task function
-    const updateSpecificTask = (updatedTask) => {
-
-    }
 
     /**
      * Creates a memoized function to group tasks by the assigned person.
@@ -106,7 +100,7 @@ function TaskList() {
                             {/*Iterate each assignee task and show an item for every task in the array*/}
                             <For each={item}>
                                 {(task) =>
-                                    <Task {...task} updateSpecificTask={updateSpecificTask} />
+                                    <Task {...task} />
                                 }
                             </For>
                         </div>

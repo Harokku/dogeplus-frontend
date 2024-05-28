@@ -1,21 +1,6 @@
 import {config} from "./config.js";
 import {configStore} from "../store/configStore.js";
-import {createDataService} from "./dataService.js";
-
-// export async function getActiveEvent(useMock = false) {
-//     try {
-//         let data
-//         if (useMock) {
-//             data = getMockData()
-//         } else {
-//             data = await getBackendData()
-//         }
-//         return {result: true, data}
-//     } catch (error) {
-//         console.error(error)
-//         return {result: false, error}
-//     }
-// }
+import {createDataService, createUpdateDataService} from "./dataService.js";
 
 function getMockData() {
     return ({
@@ -109,6 +94,28 @@ async function getBackendData() {
     return await response.json()
 }
 
+function postMockData() {
+    return ({
+        "Result": "Ok",
+    })
+}
+
+async function postBackendData(data) {
+    const url = `${config.backendURL}/active-events`
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'accept': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    if (!response.ok) {
+        throw new Error(response.statusText)
+    }
+    return await response.json()
+}
+
 /**
  * Creates a function called getActiveEvent that returns active event data.
  *
@@ -121,3 +128,11 @@ async function getBackendData() {
  */
 
 export const getActiveEvent = createDataService(getBackendData, getMockData)
+
+/**
+ * Creates a new event using the provided backend data and returns a DataService instance.
+ *
+ * @param {object} postBackendData - The backend data to be used for creating the event.
+ * @returns {Function} - An instance of DataService that allows performing CRUD operations on the newly created event.
+ */
+export const postCreteNewEvent = createUpdateDataService(postBackendData)

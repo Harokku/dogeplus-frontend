@@ -163,13 +163,12 @@ function Task(props) {
             status: nextDoneState,
             modified_by: user,
         }
-        const response = await updateActiveEvent(data, false)
+        const response = await updateActiveEvent(data)
 
-        if (response.result) {
-            addNotification(`Task ${response.data.title} completato`, notificationPriorities.SUCCESS)
-        } else {
+        // Check if responded with an error and show a status with detail
+        if (!response.result){
             console.error(response.error)
-            addNotification(`Errore salvataggio task`, notificationPriorities.ERROR)
+            addNotification(`Errore salvataggio task:\n${response.error}`, notificationPriorities.ERROR)
         }
     }
 

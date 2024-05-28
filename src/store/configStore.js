@@ -7,12 +7,14 @@ import {createEffect, createRoot, createSignal} from 'solid-js';
  * @property {string} CENTRAL - The key for the central storage value.
  * @property {string} EVENTNR - The key for the event number value.
  * @property {string} CATEGORIES - The key for the categories storage value.
+ * @property {string} INCREATION - The key for the new event creation status
  */
 const storageKeys = Object.freeze({
     USERNAME: 'store_username',
     CENTRAL: 'store_central',
     EVENTNR: 'store_eventnr',
     CATEGORIES: 'store_categories',
+    NEWEVENT: 'store_newevent',
 })
 
 /**
@@ -24,11 +26,13 @@ const storageKeys = Object.freeze({
  * @property {string} CENTRAL - The central configuration step.
  * @property {string} EVENTNR - The event number configuration step.
  * @property {string} FINISHED - The end of config process
+ * @property {string} NEWEVENT - The new event creation step
  */
 const configStep = Object.freeze({
     USERNAME: 'username',
     CENTRAL: 'central',
     EVENTNR: 'eventnr',
+    NEWEVENT: 'newevent',
     FINISHED: 'finished',
 })
 
@@ -65,6 +69,7 @@ let configStore = createRoot(() => {
     const [central, setCentral] = createSignal(getFromStorage(storageKeys.CENTRAL, null));
     const [eventNr, setEventNr] = createSignal(getFromStorage(storageKeys.EVENTNR, null));
     const [categories, setCategories] = createSignal(getFromStorage(storageKeys.CATEGORIES, null));
+    const [newEvent, setNewEvent] = createSignal(getFromStorage(storageKeys.NEWEVENT, false))
 
     // persist the username
     createEffect(() => {
@@ -98,6 +103,11 @@ let configStore = createRoot(() => {
         localStorage.setItem(storageKeys.CATEGORIES, JSON.stringify(categories()));
     })
 
+    // persist new event in creation
+    createEffect(() => {
+        localStorage.setItem(storageKeys.NEWEVENT, JSON.stringify(newEvent()));
+    })
+
     return {
         username: {
             get value() {
@@ -127,6 +137,13 @@ let configStore = createRoot(() => {
             set: setCategories,
         },
 
+        newEvent: {
+            get value() {
+                return newEvent()
+            },
+            set: setNewEvent,
+        },
+
         getCurrentStep: () => {
             if (username() === null) {
                 return configStep.USERNAME
@@ -136,6 +153,9 @@ let configStore = createRoot(() => {
             }
             if (eventNr() === null) {
                 return configStep.EVENTNR
+            }
+            if (newEvent() === true) {
+                return configStep.NEWEVENT
             }
             return configStep.FINISHED
         },

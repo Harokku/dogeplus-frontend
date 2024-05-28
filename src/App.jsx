@@ -22,16 +22,6 @@ function App() {
                     categories: configStore.categories.value,
                 },null, 1)}
             </pre>
-
-            {/*<ErrorBoundary fallback={err => <p>Error fetching: {err.message}</p>}>*/}
-            {/*    <TaskList/>*/}
-            {/*</ErrorBoundary>*/}
-
-            {/*<button class="btn" onClick={() =>*/}
-            {/*    setStore(task => task.id === 3, {operator: "Him!", isDone: 2, assignedTo: "Flotta"})}*/}
-            {/*>Update 3rd*/}
-            {/*</button>*/}
-
         </>
     )
 }

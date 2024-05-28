@@ -11,7 +11,7 @@ function EventNrInput() {
     // Data fetching
 
     onMount(async () => {
-        const response = await getActiveEvents(false)
+        const response = await getActiveEvents()
         // select function based on the "Result" value
         if (response.result) {
             switch (response.data.Result) {

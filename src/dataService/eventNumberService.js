@@ -2,21 +2,6 @@ import {config} from "./config.js";
 import {configStore} from "../store/configStore.js";
 import {createDataService} from "./dataService.js";
 
-// export async function getActiveEvents(useMock = false) {
-//     try {
-//         let data
-//         if (useMock) {
-//             data = getMockData()
-//         } else {
-//             data = await getBackendData()
-//         }
-//         return {result: true, data}
-//     } catch (error) {
-//         console.error(error)
-//         return {result: false, error}
-//     }
-// }
-
 function getMockData() {
     return ({
         "Events": [
