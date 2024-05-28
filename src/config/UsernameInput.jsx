@@ -15,10 +15,12 @@ function UsernameInput() {
     }
 
     return (
-        <form onSubmit={handleOnSubmit}>
-            <input type="text" value={name()} onChange={handleOnChange} placeholder="Enter username..." />
-            <button type="submit">Next</button>
+        <div class={"fixed inset-0 flex items-center justify-center"}>
+        <form onSubmit={handleOnSubmit} class={"flex flex-col items-center"}>
+            <input class={"mb-6 input input-bordered w-full max-w-xs"} type="text" value={name()} onChange={handleOnChange} placeholder="Nome operatore" />
+            <button class={"btn btn-success"} type="submit">Next</button>
         </form>
+        </div>
     )
 }
 

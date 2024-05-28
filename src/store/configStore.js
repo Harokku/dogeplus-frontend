@@ -151,11 +151,11 @@ let configStore = createRoot(() => {
             if (central() === null) {
                 return configStep.CENTRAL
             }
-            if (eventNr() === null) {
-                return configStep.EVENTNR
-            }
             if (newEvent() === true) {
                 return configStep.NEWEVENT
+            }
+            if (eventNr() === null) {
+                return configStep.EVENTNR
             }
             return configStep.FINISHED
         },

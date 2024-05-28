@@ -16,13 +16,15 @@ function CentralIdInput() {
     }
 
     return (
-        <form onSubmit={handleOnSubmit  }>
-            <select value={id()} onChange={handleOnChange}>
-                <option value="" disabled>Select Central ID</option>
-                {ids.map((id) => <option key={id} value={id}>{id}</option>)}
-            </select>
-            <button type="submit">Next</button>
-        </form>
+        <div class={"fixed inset-0 flex items-center justify-center"}>
+            <form onSubmit={handleOnSubmit} class={"flex flex-col items-center"}>
+                <select class={"mb-6 select select-bordered w-full max-w-xs"} value={id()} onChange={handleOnChange}>
+                    <option value="" disabled>Select Central ID</option>
+                    {ids.map((id) => <option key={id} value={id}>{id}</option>)}
+                </select>
+                <button class={"btn btn-success"} type="submit">Next</button>
+            </form>
+        </div>
     )
 }
 

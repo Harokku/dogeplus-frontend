@@ -71,7 +71,7 @@ function ItemSelection() {
     }
 
     return (
-        <div class="flex flex-col items-center justify-center">
+        <div class="fixed inset-0 flex flex-col items-center justify-center">
             <Show when={!fetchError()}
                   fallback={<p>Nessuna categoria trovata</p>}
             >
@@ -81,7 +81,7 @@ function ItemSelection() {
                            setEventNumber(parseInt(newValue))
                            e.target.value = newValue
                        }}
-                       class="input input-bordered w-full max-w-xs"/>
+                       class="mb-6 input input-bordered w-full max-w-xs"/>
                 <For each={categories()} fallback={<div>Loading...</div>}>
                     {(category) => (
                         <div key={category} onClick={() => handleOnChange(category)}
@@ -91,14 +91,14 @@ function ItemSelection() {
                     )}
                 </For>
             </Show>
-            <div class="join">
+            <div class="join mt-6">
                 <button type="button" disabled={!formValidity()} onClick={handleOnSubmit}
                         class="btn btn-success join-item">Crea evento
                 </button>
                 <button type="button" onClick={handleReset} class="btn btn-secondary btn-outline join-item">Cancella
                     selezione
                 </button>
-                <button type="button" onClick={handleReset} class="btn btn-error btn-outline join-item">Annulla
+                <button type="button" onClick={()=> configStore.newEvent.set(false)} class="btn btn-error btn-outline join-item">Annulla
                     creazione
                 </button>
             </div>

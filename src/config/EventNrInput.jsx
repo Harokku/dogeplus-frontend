@@ -74,10 +74,11 @@ function EventNrInput() {
     }
 
     return (
-        <div class="flex flex-col items-center justify-center">
+        <div class="fixed inset-0 flex flex-col items-center justify-center">
             <Show when={!fetchError()}
                   fallback={<p>Nessun evento attivo trovato</p>}
             >
+                <h1 class={"mb-6"}>Seleziona evento da lavorare</h1>
                 <For each={events()} fallback={<div>Loading...</div>}>
                     {(event) => (
                         <div key={event} onClick={() => handleOnClick(event)}
@@ -86,9 +87,10 @@ function EventNrInput() {
                         </div>
                     )}
                 </For>
+                <button type="button" onClick={handleOnSubmit}
+                        class="btn btn-success mt-6">Next
+                </button>
             </Show>
-            <button type="button" onClick={handleOnSubmit} class="mt-4 px-4 py-2 bg-blue-600 text-white rounded">Next
-            </button>
         </div>
     )
 }
