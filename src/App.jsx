@@ -3,12 +3,17 @@ import ConfigFlow from "./config/ConfigFlow.jsx";
 import {configStore} from "./store/configStore.js";
 import NotificationContainer from "./NotificationContainer.jsx";
 import StepBar from "./navbar/StepBar.jsx";
+import Swimlanes from "./assessment/Swimlanes.jsx";
 
 
 function App() {
 
     return (
         <>
+            <Swimlanes/>
+            <br/>
+            <hr/>
+
             <NotificationContainer/>
             <StepBar/>
             <hr/>
