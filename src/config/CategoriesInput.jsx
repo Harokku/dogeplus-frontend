@@ -3,6 +3,7 @@ import {configStore} from "../store/configStore.js";
 import {getCategories} from "../dataService/categoriesService.js";
 import {bgColor, textColor} from "../theme/bg.js";
 import {postCreteNewEvent} from "../dataService/activeEventService.js";
+import {addNotification, notificationPriorities} from "../store/notificationStore.js";
 
 function ItemSelection() {
     const [selectedItems, setSelectedItems] = createSignal([])
@@ -55,6 +56,13 @@ function ItemSelection() {
         // If form si valid submit data to backend
         if (formValidity()) {
             const response = await postCreteNewEvent(data)
+            console.log(response)
+            if (response.result) {
+                configStore.eventNr.set(null)
+                configStore.newEvent.set(false)
+            } else {
+                addNotification("Errore durante la creazione maxi", notificationPriorities.ERROR)
+            }
         }
 
     }
@@ -98,7 +106,8 @@ function ItemSelection() {
                 <button type="button" onClick={handleReset} class="btn btn-secondary btn-outline join-item">Cancella
                     selezione
                 </button>
-                <button type="button" onClick={()=> configStore.newEvent.set(false)} class="btn btn-error btn-outline join-item">Annulla
+                <button type="button" onClick={() => configStore.newEvent.set(false)}
+                        class="btn btn-error btn-outline join-item">Annulla
                     creazione
                 </button>
             </div>
