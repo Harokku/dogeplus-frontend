@@ -11,7 +11,7 @@ function EventNrInput() {
     // Data fetching
 
     onMount(async () => {
-        const response = await getActiveEvents()
+        const response = await getActiveEvents(import.meta.env.VITE_MOCK || false)
         // select function based on the "Result" value
         if (response.result) {
             switch (response.data.Result) {

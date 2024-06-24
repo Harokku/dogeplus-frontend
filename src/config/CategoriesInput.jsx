@@ -13,7 +13,7 @@ function ItemSelection() {
 
     // Data fetching
     onMount(async () => {
-        const response = await getCategories()
+        const response = await getCategories(import.meta.env.VITE_MOCK || false)
         if (response.result) {
             setCategories(response.data.data)
         } else {

@@ -17,7 +17,7 @@ function App() {
             <NotificationContainer/>
             <StepBar/>
             <hr/>
-            <ConfigFlow />
+            <ConfigFlow/>
 
             {/*<pre>*/}
             {/*    {JSON.stringify({*/}

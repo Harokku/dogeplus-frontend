@@ -3,6 +3,7 @@ export * from "./eventNumberService.js";
 export * from "./activeEventService.js";
 export * from "./updateTaskService.js";
 export * from "./categoriesService.js";
+export * from "./escalationLevelsDefinitionsService.js"
 
 /**
  * Creates a data service that returns backend data or mock data based on the provided parameters.

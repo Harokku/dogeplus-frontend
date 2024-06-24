@@ -39,7 +39,7 @@ function TaskList() {
         } catch (err) {
 
         }
-        if (data?.Result ==="Event Task Updated") {
+        if (data?.Result === "Event Task Updated") {
             setTaskStore(task => task.uuid === data?.Events.uuid, data?.Events)
         }
     });
@@ -56,7 +56,7 @@ function TaskList() {
      * @throws {Error} If an error occurs while fetching the data from the backend.
      */
     const fetchData = async () => {
-        const response = await getActiveEvent(false)
+        const response = await getActiveEvent(import.meta.env.VITE_MOCK || false)
         if (response.result) {
             setTaskStore(response.data.Tasks)
         }

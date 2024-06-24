@@ -3,9 +3,9 @@ import { createSignal } from "solid-js";
 export function createStore() {
     // our reactive state
     const [state, setState] = createSignal([
-        { id: '1', name: 'Swimlane 1', cards: [{id: 'card1', title: 'Card 1', body: 'Some text'}] },
-        { id: '2', name: 'Swimlane 2', cards: [{id: 'card2', title: 'Card 2', body: 'Some text'}, {id: 'card3', title: 'Card 3', body: 'Some text'}] },
-        { id: '3', name: 'Swimlane 3', cards: [{id: 'card4', title: 'Card 4', body: 'Some text'}] },
+        { id: '1', name: 'Allarme', cards: [{id: 'card1', title: 'Card 1', body: 'Some text'}] },
+        { id: '2', name: 'Emergenza', cards: [{id: 'card2', title: 'Card 2', body: 'Some text'}, {id: 'card3', title: 'Card 3', body: 'Some text'}] },
+        { id: '3', name: 'Incidente', cards: [{id: 'card4', title: 'Card 4', body: 'Some text'}] },
     ]);
 
     // methods to interact with the state
