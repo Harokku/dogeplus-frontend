@@ -1,6 +1,6 @@
 import {createSignal} from "solid-js";
 
-function AssessmentCard({id, title, body}) {
+function AssessmentCard(props) {
     const [dragging, setDragging] = createSignal(false)
 
     const onDragStart = (event) => {
@@ -21,13 +21,16 @@ function AssessmentCard({id, title, body}) {
 
     return (
         <div
-            id={id}
+            id={props.id}
             draggable={true}
             onDragStart={onDragStart}
             onDragEnd={onDragEnd}
             class={`bg-white rounded-md p-4 m-2 pb-0 shadow-lg ${dragging() ? 'cursor-grabbing' : 'cursor-grab'}`}>
-            <h3 class="font-semibold text-xl mb-2">{title}</h3>
-            <p>{body}</p>
+            <h3 class="font-semibold text-xl mb-2">{`${props.location} - ${props.location_detail}`}</h3>
+            <div class="flex flex-col items-start">
+                <p class="flex justify-between w-full">Evento: <span class="text-lg">{props.event}</span></p>
+                <p class="flex justify-between w-full">Tipo: <span class="text-lg capitalize">{props.type}</span></p>
+            </div>
             <div class={"flex items-center justify-between"}>
                 <span class={"text-sm"}>Completato</span>
                 <div class={"h-1 mx-2 flex-grow bg-gray-300"}>

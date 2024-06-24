@@ -1,16 +1,15 @@
-import { createSignal } from "solid-js";
+import {createSignal} from "solid-js";
 
 export function createStore() {
     // our reactive state
-    const [state, setState] = createSignal([
-        { id: '1', name: 'Allarme', cards: [{id: 'card1', title: 'Card 1', body: 'Some text'}] },
-        { id: '2', name: 'Emergenza', cards: [{id: 'card2', title: 'Card 2', body: 'Some text'}, {id: 'card3', title: 'Card 3', body: 'Some text'}] },
-        { id: '3', name: 'Incidente', cards: [{id: 'card4', title: 'Card 4', body: 'Some text'}] },
-    ]);
+    const [state, setState] = createSignal([]);
 
     // methods to interact with the state
     return {
         getState: () => state(),
+        initializeStore: (data) => {
+            setState(data)
+        },
         moveCardToLane: (cardId, laneId) => {
             let lanes = state();
             let card;
