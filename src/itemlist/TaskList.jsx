@@ -8,6 +8,7 @@ import {
 } from "@solid-primitives/websocket";
 import {config} from "../dataService/config.js";
 import {getActiveEvent} from "../dataService/dataService.js";
+import {parseEnvToBoolean} from "../utils/varCasting.js";
 
 function TaskList() {
 
@@ -56,7 +57,7 @@ function TaskList() {
      * @throws {Error} If an error occurs while fetching the data from the backend.
      */
     const fetchData = async () => {
-        const response = await getActiveEvent(import.meta.env.VITE_MOCK || false)
+        const response = await getActiveEvent(parseEnvToBoolean(import.meta.env.VITE_MOCK) || false)
         if (response.result) {
             setTaskStore(response.data.Tasks)
         }

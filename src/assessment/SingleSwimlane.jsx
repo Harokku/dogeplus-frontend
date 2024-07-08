@@ -13,7 +13,7 @@ function SingleSwimlane({id, name, cards, store}) {
         if (tooltipData() !== null) return
 
         // Actually fetch data
-        const response = await getEscalationLevelsDefinitions(import.meta.env.VITE_MOCK || false)
+        const response = await getEscalationLevelsDefinitions(parseEnvToBoolean(import.meta.env.VITE_MOCK) || false)
         if (response.result) {
             // Find element that match props.name
             const levelDefinition = response.data.data.find(item => item.name === name)

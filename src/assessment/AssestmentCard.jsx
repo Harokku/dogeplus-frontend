@@ -4,7 +4,7 @@ function AssessmentCard(props) {
     const [dragging, setDragging] = createSignal(false)
 
     const onDragStart = (event) => {
-        event.dataTransfer.setData("cardId", id);
+        event.dataTransfer.setData("cardId", props.id);
         event.dataTransfer.effectAllowed = 'move'
         // Reduce the opacity of the card for a better view context
         event.currentTarget.style.opacity = "0.4"
