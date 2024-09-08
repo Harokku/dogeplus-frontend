@@ -4,6 +4,7 @@ import {getCategories} from "../dataService/categoriesService.js";
 import {bgColor, textColor} from "../theme/bg.js";
 import {postCreteNewEvent} from "../dataService/activeEventService.js";
 import {addNotification, notificationPriorities} from "../store/notificationStore.js";
+import {parseEnvToBoolean} from "../utils/varCasting.js";
 
 function ItemSelection() {
     const [selectedItems, setSelectedItems] = createSignal([])

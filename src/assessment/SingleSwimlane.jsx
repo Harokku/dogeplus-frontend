@@ -1,6 +1,7 @@
 import AssessmentCard from "./AssestmentCard.jsx";
 import {createSignal, onMount} from "solid-js";
 import {getEscalationLevelsDefinitions} from "../dataService/escalationLevelsDefinitionsService.js";
+import {parseEnvToBoolean} from "../utils/varCasting.js";
 
 function SingleSwimlane({id, name, cards, store}) {
     const [tooltipData, setTooltipData] = createSignal(null)
