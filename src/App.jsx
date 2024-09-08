@@ -10,9 +10,9 @@ function App() {
 
     return (
         <>
-            <Swimlanes/>
-            <br/>
-            <hr/>
+            {/*<Swimlanes/>*/}
+            {/*<br/>*/}
+            {/*<hr/>*/}
 
             <NotificationContainer/>
             <StepBar/>

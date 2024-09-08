@@ -4,6 +4,7 @@ import {configStep, configStore} from "../store/configStore.js";
 import EventNrInput from "./EventNrInput.jsx";
 import TaskList from "../itemlist/TaskList.jsx";
 import CategoriesInput from "./CategoriesInput.jsx";
+import Swimlanes from "../assessment/Swimlanes.jsx";
 
 function ConfigFlow() {
     const getCurrentStep = () => {
@@ -14,10 +15,12 @@ function ConfigFlow() {
                 return <CentralIdInput/>;
             case configStep.NEWEVENT:
                 return <CategoriesInput/>
-            case configStep.EVENTNR:
-                return <EventNrInput/>
+            // case configStep.EVENTNR:
+            //     return <EventNrInput/>
+            // case configStep.FINISHED:
+            //     return <TaskList/>
             case configStep.FINISHED:
-                return <TaskList/>
+                return <Swimlanes/>
         }
     }
 
