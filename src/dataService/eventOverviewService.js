@@ -26,22 +26,35 @@ function getMockData() {
 
 // TODO: Implement backend logic
 async function getBackEndData() {
-    const url = `${config.backendURL}/escalation_aggregation/details/${configStore.central.value}`
-    const response = await fetch(url, {
+    // Overview data fetching
+    const dataUrl = `${config.backendURL}/escalation_aggregation/details/${configStore.central.value}`
+    const responseData = await fetch(dataUrl, {
         method: 'GET',
         headers: {
             "accept": "application/json",
         }
     })
-    if (!response.ok) {
-        throw new Error(response.statusText);
+    if (!responseData.ok) {
+        throw new Error(responseData.statusText);
     }
 
-    const data = await response.json()
-    console.log(data)
-    const transformedResponse = transformResponse(data)
-    console.log(transformedResponse)
-    return transformedResponse
+    const data = await responseData.json()
+
+    // Completion ratio data fetching
+    const completionUrl = `${config.backendURL}/completion_aggregation`
+    const responseCompletion = await fetch(completionUrl, {
+        method: 'GET',
+        headers: {
+            "accept": "application/json",
+        }
+    })
+    if (!responseCompletion.ok) {
+        throw new Error(responseCompletion.statusText);
+    }
+    const completionData = await responseCompletion.json()
+
+    // transform data to requested format and return it
+    return transformResponse(data, completionData)
 }
 
 /**
@@ -62,7 +75,7 @@ function capitalize(str) {
  * @param {string} serverResponse.result - The result status from the server.
  * @return {Object} The transformed response containing the predefined levels and grouped data.
  */
-function transformResponse(serverResponse) {
+function transformResponse(serverResponse, completionData) {
     const {data, result} = serverResponse;
 
     // Predefined levels
@@ -91,7 +104,8 @@ function transformResponse(serverResponse) {
                 location: item.location,
                 location_detail: item.location_detail,
                 type: item.type,
-                central_id: item.central_id // Add the 'central_id' field.
+                central_id: item.central_id, // Add the 'central_id' field.
+                completion: completionData[item.event_number]
             }))
         };
     });

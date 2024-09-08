@@ -1,4 +1,5 @@
-import {createSignal} from "solid-js";
+import {createMemo, createSignal} from "solid-js";
+import {getColor, getTextColor, lightenColor} from "../utils/colorsHelper.js";
 
 function AssessmentCard(props) {
     const [dragging, setDragging] = createSignal(false)
@@ -16,8 +17,13 @@ function AssessmentCard(props) {
         setDragging(false)
     }
 
-    const completedCount = 10
-    const totalCount = 21
+    // Compute percentage and colors reactively
+    const percentage = createMemo(() => {
+        return Math.round((props.completion.completed / props.completion.total) * 100);
+    });
+    const backgroundColor = createMemo(() => getColor(percentage()));
+    const lighterBackgroundColor = createMemo(() => lightenColor(backgroundColor(), 80));
+    const textColor = createMemo(() => getTextColor(lighterBackgroundColor()));
 
     return (
         <div
@@ -25,7 +31,13 @@ function AssessmentCard(props) {
             draggable={true}
             onDragStart={onDragStart}
             onDragEnd={onDragEnd}
-            class={`bg-white rounded-md p-4 m-2 pb-0 shadow-lg ${dragging() ? 'cursor-grabbing' : 'cursor-grab'}`}>
+            class={`bg-white rounded-md p-4 m-2 pb-0 shadow-lg ${dragging() ? 'cursor-grabbing' : 'cursor-grab'}`}
+            style={{
+                border: `5px solid ${backgroundColor()}`,
+                "background-color": `${lighterBackgroundColor()}`,
+                color: textColor(),
+            }}
+        >
             <h3 class="font-semibold text-xl mb-2">{`${props.location} - ${props.location_detail}`}</h3>
             <div class="flex flex-col items-start">
                 <p class="flex justify-between w-full">Evento: <span class="text-lg">{props.event}</span></p>
@@ -37,13 +49,13 @@ function AssessmentCard(props) {
                     <div
                         class="h-1 "
                         style={{
-                            "background-color": `${completedCount / totalCount > 0.5 ? 'green' : 'red'}`,
-                            "width": `${(completedCount / totalCount) * 100}%`
+                            "background-color": getColor(percentage()),
+                            "width": `${percentage()}%`
                         }}
                     >
                     </div>
                 </div>
-                <span class={"text-sm"}>50%</span>
+                <span class={"text-sm"}>{percentage()}%</span>
             </div>
         </div>
     );
