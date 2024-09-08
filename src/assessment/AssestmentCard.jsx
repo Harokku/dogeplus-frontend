@@ -1,5 +1,6 @@
 import {createMemo, createSignal} from "solid-js";
 import {getColor, getTextColor, lightenColor} from "../utils/colorsHelper.js";
+import {configStore} from "../store/configStore.js";
 
 function AssessmentCard(props) {
     const [dragging, setDragging] = createSignal(false)
@@ -25,6 +26,11 @@ function AssessmentCard(props) {
     const lighterBackgroundColor = createMemo(() => lightenColor(backgroundColor(), 80));
     const textColor = createMemo(() => getTextColor(lighterBackgroundColor()));
 
+    // Handle click to set event number and display associated tasks
+    const handleClick = () => {
+        configStore.eventNr.set(props.event)
+    }
+
     return (
         <div
             id={props.id}
@@ -37,6 +43,7 @@ function AssessmentCard(props) {
                 "background-color": `${lighterBackgroundColor()}`,
                 color: textColor(),
             }}
+            onClick={handleClick}
         >
             <h3 class="font-semibold text-xl mb-2">{`${props.location} - ${props.location_detail}`}</h3>
             <div class="flex flex-col items-start">

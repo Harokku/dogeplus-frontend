@@ -10,13 +10,15 @@ function ConfigFlow() {
     const getCurrentStep = () => {
         switch (configStore.getCurrentStep()) {
             case configStep.USERNAME:
-                return <UsernameInput/>;
+                return <UsernameInput/>
             case configStep.CENTRAL:
-                return <CentralIdInput/>;
+                return <CentralIdInput/>
             case configStep.NEWEVENT:
                 return <CategoriesInput/>
-            // case configStep.EVENTNR:
-            //     return <EventNrInput/>
+            case configStep.EVENTNR:
+                return <TaskList/>
+             // case configStep.EVENTNR:
+             //     return <EventNrInput/>
             // case configStep.FINISHED:
             //     return <TaskList/>
             case configStep.FINISHED:

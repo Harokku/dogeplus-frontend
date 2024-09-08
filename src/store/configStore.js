@@ -154,9 +154,9 @@ let configStore = createRoot(() => {
             if (newEvent() === true) {
                 return configStep.NEWEVENT
             }
-            // if (eventNr() === null) {
-            //     return configStep.EVENTNR
-            // }
+            if (eventNr() !== null) {
+                return configStep.EVENTNR
+            }
             return configStep.FINISHED
         },
     };
