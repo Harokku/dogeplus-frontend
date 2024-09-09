@@ -74,8 +74,33 @@ export function createStore() {
             } else {
                 addNotification("Errore durante l'escalation", notificationPriorities.ERROR)
             }
+        },
+        updateEventTotalTasks: (eventNumber, addedTasks) => {
+            // Get the current state
+            const lanes = state();
 
+            // Map through the lanes and update the relevant card
+            const updatedLanes = lanes.map(lane => {
+                return {
+                    ...lane,
+                    cards: lane.cards.map(card => {
+                        if (parseInt(card.event) === eventNumber) {
+                            // Update the total tasks in the completion field
+                            return {
+                                ...card,
+                                completion: {
+                                    ...card.completion,
+                                    total: card.completion.total + addedTasks
+                                }
+                            };
+                        }
+                        return card;
+                    }),
+                };
+            });
 
+            // Update the state with the new lanes
+            setState(updatedLanes);
         }
     }
 }

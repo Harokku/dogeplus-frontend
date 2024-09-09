@@ -119,9 +119,6 @@ function transformResponse(serverResponse, completionData) {
 
 async function postBackEndData(data) {
     const url = `${config.backendURL}/escalation_aggregation/${data.direction}`
-    // FIXME: remove in prod
-    console.log(data)
-    console.log(JSON.stringify(data))
     const response = await fetch(url, {
         method: 'POST',
         headers: {
