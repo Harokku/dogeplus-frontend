@@ -53,7 +53,8 @@ function ItemSelection() {
         const data = {
             categories: selectedItems(),
             event_number: eventNumber(),
-            central_id: configStore.central.value
+            central_id: configStore.central.value,
+            escalation_level: localStorage.getItem("store_escalation")
         }
 
         const overviewData = {

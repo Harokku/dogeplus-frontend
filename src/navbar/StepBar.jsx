@@ -19,10 +19,10 @@ function StepBar(props) {
                 <li class={"step " + (configStore.eventNr.value !== null ? "step-info" : "")}
                     onClick={() => configStore.eventNr.set(null)}>{configStore.eventNr.value}</li>
             </ul>
-            <Show when={creationEnabled()}>
-                <button class={"btn btn-info"} onClick={() => configStore.newEvent.set(true)}>Dichiara nuova Maxi
-                </button>
-            </Show>
+            {/*<Show when={creationEnabled()}>*/}
+            {/*    <button class={"btn btn-info"} onClick={() => configStore.newEvent.set(true)}>Dichiara nuova Maxi*/}
+            {/*    </button>*/}
+            {/*</Show>*/}
         </div>
     )
 }
