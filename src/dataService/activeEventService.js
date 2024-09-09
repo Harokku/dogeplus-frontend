@@ -116,6 +116,22 @@ async function postBackendData(data) {
     return await response.json()
 }
 
+async function postBackendOverviewData(data) {
+    const url = `${config.backendURL}/active-events/overview`
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'accept': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    if (!response.ok) {
+        throw new Error(response.statusText)
+    }
+    return await response.json()
+}
+
 /**
  * Creates a function called getActiveEvent that returns active event data.
  *
@@ -136,3 +152,13 @@ export const getActiveEvent = createDataService(getBackendData, getMockData)
  * @returns {Function} - An instance of DataService that allows performing CRUD operations on the newly created event.
  */
 export const postCreteNewEvent = createUpdateDataService(postBackendData)
+
+/**
+ * The `postCreateNewOverview` constant holds a service function that manages the creation and updating of overview data.
+ * This function is created by passing `postBackendOverviewData` to the `createUpdateDataService` function.
+ * `postBackendOverviewData` handles the backend interaction for posting overview data, while `createUpdateDataService`
+ * wraps this interaction with additional services such as validation or logging.
+ *
+ * @constant {Function} postCreateNewOverview
+ */
+export const postCreateNewOverview = createUpdateDataService(postBackendOverviewData)

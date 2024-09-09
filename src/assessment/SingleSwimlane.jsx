@@ -2,6 +2,7 @@ import AssessmentCard from "./AssestmentCard.jsx";
 import {createSignal, onMount} from "solid-js";
 import {getEscalationLevelsDefinitions} from "../dataService/escalationLevelsDefinitionsService.js";
 import {parseEnvToBoolean} from "../utils/varCasting.js";
+import {configStore} from "../store/configStore.js";
 
 function SingleSwimlane({id, name, cards, store}) {
     const [tooltipData, setTooltipData] = createSignal(null)
@@ -41,6 +42,12 @@ function SingleSwimlane({id, name, cards, store}) {
         event.preventDefault();
     };
 
+    const handleAddNewEvent = (event) => {
+        event.preventDefault();
+        localStorage.setItem("store_escalation", name.toLowerCase())
+        configStore.newEvent.set(true)
+    }
+
     return (
         <div
             onDrop={onDrop}
@@ -50,6 +57,7 @@ function SingleSwimlane({id, name, cards, store}) {
             <div class={"flex justify-center relative"}>
                 {/*Swimlane add button*/}
                 <div class={"absolute left-0 ml-2 h-6 w-6 cursor-pointer tooltip tooltip-bottom tooltip-primary"}
+                     onclick={handleAddNewEvent}
                      data-tip={`Aggiungi ${name}`}>
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
                          stroke="currentColor" class="size-6">
@@ -62,7 +70,9 @@ function SingleSwimlane({id, name, cards, store}) {
                 <h2 class="text-center font-bold">{name}</h2>
 
                 {/*Swimlane info tooltip*/}
-                <div onMouseEnter={fetchData} class={"absolute right-0 mr-2 h-6 w-6 cursor-help tooltip tooltip-left tooltip-info"} data-tip={tooltipData()}>
+                <div onMouseEnter={fetchData}
+                     class={"absolute right-0 mr-2 h-6 w-6 cursor-help tooltip tooltip-left tooltip-info"}
+                     data-tip={tooltipData()}>
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
                          stroke="currentColor" class="size-6">
                         <path stroke-linecap="round" stroke-linejoin="round"

@@ -2,7 +2,7 @@ import {createSignal, For, onMount, Show} from "solid-js";
 import {configStore} from "../store/configStore.js";
 import {getCategories} from "../dataService/categoriesService.js";
 import {bgColor, textColor} from "../theme/bg.js";
-import {postCreteNewEvent} from "../dataService/activeEventService.js";
+import {postCreateNewOverview, postCreteNewEvent} from "../dataService/activeEventService.js";
 import {addNotification, notificationPriorities} from "../store/notificationStore.js";
 import {parseEnvToBoolean} from "../utils/varCasting.js";
 
@@ -11,6 +11,8 @@ function ItemSelection() {
     const [categories, setCategories] = createSignal(null)
     const [eventNumber, setEventNumber] = createSignal(null)
     const [fetchError, setFetchError] = createSignal(false)
+    const [location, setLocation] = createSignal(null)
+    const [locationDetail, setLocationDetail] = createSignal(null)
 
     // Data fetching
     onMount(async () => {
@@ -54,10 +56,26 @@ function ItemSelection() {
             central_id: configStore.central.value
         }
 
+        const overviewData = {
+            central_id: configStore.central.value,
+            event_number: eventNumber(),
+            location: location(),
+            location_detail: locationDetail(),
+            type: selectedItems()[1],
+            level: localStorage.getItem("store_escalation")
+        }
+
         // If form si valid submit data to backend
         if (formValidity()) {
+            // FIXME: remove console logs
             const response = await postCreteNewEvent(data)
             console.log(response)
+
+            // Add new overview
+            console.log(overviewData)
+            const overviewResponse = postCreateNewOverview(overviewData)
+            console.log(overviewResponse)
+
             if (response.result) {
                 configStore.eventNr.set(null)
                 configStore.newEvent.set(false)
@@ -84,6 +102,9 @@ function ItemSelection() {
             <Show when={!fetchError()}
                   fallback={<p>Nessuna categoria trovata</p>}
             >
+                <h1>Crea nuovo monitoraggio di livello {localStorage.getItem("store_escalation")}</h1>
+                <br/>
+
                 <input type="text" placeholder="Numero evento"
                        onInput={(e) => {
                            const newValue = e.target.value.replace(/\D/g, '');
@@ -91,6 +112,20 @@ function ItemSelection() {
                            e.target.value = newValue
                        }}
                        class="mb-6 input input-bordered w-full max-w-xs"/>
+
+                <input type={"text"} placeholder={"Luogo Evento"}
+                       onInput={(e) => {
+                           setLocation(e.target.value)
+                       }}
+                       class="mb-6 input input-bordered w-full max-w-xs"/>
+
+                <input type={"text"} placeholder={"Dettaglio Luogo Evento"}
+                       onInput={(e) => {
+                           setLocationDetail(e.target.value)
+                       }}
+                       class="mb-6 input input-bordered w-full max-w-xs"/>
+
+                Seleziona categorie
                 <For each={categories()} fallback={<div>Loading...</div>}>
                     {(category) => (
                         <div key={category} onClick={() => handleOnChange(category)}
