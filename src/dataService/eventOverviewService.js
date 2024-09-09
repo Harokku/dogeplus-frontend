@@ -1,5 +1,5 @@
 import {config} from "./config.js";
-import {createDataService} from "./dataService.js";
+import {createDataService, createUpdateDataService} from "./dataService.js";
 import {configStore} from "../store/configStore.js";
 
 function getMockData() {
@@ -117,5 +117,35 @@ function transformResponse(serverResponse, completionData) {
     };
 }
 
+async function postBackEndData(data) {
+    const url = `${config.backendURL}/escalation_aggregation/${data.direction}`
+    // FIXME: remove in prod
+    console.log(data)
+    console.log(JSON.stringify(data))
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'accept': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    if (!response.ok) {
+        throw new Error(response.statusText);
+    }
+    return await response.json()
+}
+
+/**
+ * Retrieves an overview of events by invoking a data service function.
+ * The data service function is created using the provided back-end and mock data retrieval functions.
+ *
+ * The behavior of `getEventOverview` can switch between real back-end data and mock data
+ * based on the implementation of the provided data retrieval functions.
+ *
+ * @type {Function}
+ */
 export const getEventOverview = createDataService(getBackEndData, getMockData)
+
+export const postEscalateEvent = createUpdateDataService(postBackEndData)
 
