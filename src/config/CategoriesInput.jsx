@@ -13,7 +13,10 @@ function ItemSelection() {
     const [fetchError, setFetchError] = createSignal(false)
     const [location, setLocation] = createSignal(null)
     const [locationDetail, setLocationDetail] = createSignal(null)
-    const PRO22= 'PRO22'
+    const [incidentLevel, setIncidentLevel] = createSignal(null)
+    const escalationLevel = localStorage.getItem("store_escalation")
+    const incidentLevels = ["bianca", "verde", "gialla", "rossa"]
+    const PRO22 = 'PRO22'
 
     // Data fetching
     onMount(async () => {
@@ -50,7 +53,8 @@ function ItemSelection() {
     const handleReset = (e) => {
         if (e) e.preventDefault();
         // Clear the array but keep PRO22 if it's present
-        setSelectedItems(selectedItems().includes(PRO22) ? [PRO22] : []);
+        setSelectedItems(selectedItems().includes(PRO22) ? [PRO22] : [])
+        setIncidentLevel(null) // Clear the incident level selection
     }
 
     // Save on store and create the new event
@@ -72,6 +76,7 @@ function ItemSelection() {
             event_number: eventNumber(),
             central_id: configStore.central.value,
             escalation_level: localStorage.getItem("store_escalation"),
+            incident_level: escalationLevel === "incidente" ? incidentLevel() : null,
         }
 
         const overviewData = {
@@ -104,14 +109,15 @@ function ItemSelection() {
     const formValidity = () => {
         const items = selectedItems();
         const number = eventNumber();
+        const escalationLevel = localStorage.getItem('store_escalation');
 
         const itemsAreValid = Array.isArray(items) && items.length > 0;
         const numberIsValid = typeof number === "number" && number > 0;
 
-        return itemsAreValid && numberIsValid;
-    }
+        const levelValid = escalationLevel !== "incidente" || incidentLevel() !== null;
 
-    // TODO: Add selection for incidentLevel in case of Incident
+        return itemsAreValid && numberIsValid && levelValid;
+    }
 
     return (
         <div class="fixed inset-0 flex flex-col items-center justify-center">
@@ -141,16 +147,36 @@ function ItemSelection() {
                        }}
                        class="mb-6 input input-bordered w-full max-w-xs"/>
 
-                Seleziona categorie
-                <For each={categories()} fallback={<div>Loading...</div>}>
-                    {(category) => (
-                        <div key={category} onClick={() => handleOnChange(category)}
-                             class={"flex items-center justify-center my-1 cursor-pointer p-2 rounded " + (selectedItems().includes(category) ? bgColor.SELECTED : bgColor.NORMAL)}>
-                            <p class={"font-bold" + textColor.NORMAL}>{category}</p>
+                <label>Seleziona categorie</label>
+                <div className="flex flex-row gap-2">
+                    <For each={categories()} fallback={<div>Loading...</div>}>
+                        {(category) => (
+                            <div key={category} onClick={() => handleOnChange(category)}
+                                 className={"flex items-center justify-center my-1 cursor-pointer p-2 rounded " + (selectedItems().includes(category) ? bgColor.SELECTED : bgColor.NORMAL)}>
+                                <p class={"font-bold" + textColor.NORMAL}>{category}</p>
+                            </div>
+                        )}
+                    </For>
+                </div>
+
+                <Show when={escalationLevel === "incidente"}>
+                    <div>
+                        <label>Seleziona livello incidente</label>
+                        <div className="flex flex-row gap-2">
+                            <For each={incidentLevels} fallback={<div>Loading...</div>}>
+                                {(level) => (
+                                    <div key={level} onClick={() => setIncidentLevel(level)}
+                                         className={"flex items-center justify-center my-1 cursor-pointer p-2 rounded " + (incidentLevel() === level ? bgColor.SELECTED : bgColor.NORMAL)}>
+                                        <p class={"font-bold " + textColor.NORMAL}>{level}</p>
+                                    </div>
+                                )}
+                            </For>
                         </div>
-                    )}
-                </For>
+                    </div>
+                </Show>
+
             </Show>
+
             <div class="join mt-6">
                 <button type="button" disabled={!formValidity()} onClick={handleOnSubmit}
                         class="btn btn-success join-item">Crea evento
