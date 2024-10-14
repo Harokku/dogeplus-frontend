@@ -13,12 +13,19 @@ function ItemSelection() {
     const [fetchError, setFetchError] = createSignal(false)
     const [location, setLocation] = createSignal(null)
     const [locationDetail, setLocationDetail] = createSignal(null)
+    const PRO22= 'PRO22'
 
     // Data fetching
     onMount(async () => {
         const response = await getCategories(parseEnvToBoolean(import.meta.env.VITE_MOCK) || false)
         if (response.result) {
-            setCategories(response.data.data)
+            const fetchedCategories = response.data.data;
+            setCategories(fetchedCategories);
+
+            // Check if PRO22 is present and add it to selectedItems
+            if (fetchedCategories.includes(PRO22)) {
+                setSelectedItems([PRO22]);
+            }
         } else {
             setFetchError(true)
         }
@@ -26,11 +33,13 @@ function ItemSelection() {
 
     // When an item is clicked, add or remove it from selection array
     const handleOnChange = (category) => {
+        if (category === PRO22) return; // Prevent PRO22 from being deselected
+
         let selected = selectedItems().slice();
         const targetIndex = selected.indexOf(category);
 
         if (targetIndex === -1)
-            selected.push(category);
+            selected = [PRO22, category]; // Ensure PRO22 is always selected
         else
             selected.splice(targetIndex, 1);
 
@@ -40,21 +49,29 @@ function ItemSelection() {
     // Clear the selected items array
     const handleReset = (e) => {
         if (e) e.preventDefault();
-        // Clear the array
-        setSelectedItems([])
+        // Clear the array but keep PRO22 if it's present
+        setSelectedItems(selectedItems().includes(PRO22) ? [PRO22] : []);
     }
 
     // Save on store and create the new event
     const handleOnSubmit = async (e) => {
         if (e) e.preventDefault();
-        // Save the selected items in store
-        configStore.categories.set(selectedItems());
+
+        // Filter out PRO22 from the selected items
+        const categoriesToPost = selectedItems().filter(category => category !== PRO22);
+
+        // Since backend expects only a single category, take the first item from the filtered array
+        const categoryToPost = categoriesToPost.length > 0 ? categoriesToPost[0] : null;
+
+        // Save the selected category in store (excluding PRO22)
+        configStore.categories.set(categoryToPost ? [categoryToPost] : []);
+
         // Call backend and create the event
         const data = {
-            categories: selectedItems(),
+            categories: categoryToPost,
             event_number: eventNumber(),
             central_id: configStore.central.value,
-            escalation_level: localStorage.getItem("store_escalation")
+            escalation_level: localStorage.getItem("store_escalation"),
         }
 
         const overviewData = {
@@ -62,20 +79,16 @@ function ItemSelection() {
             event_number: eventNumber(),
             location: location(),
             location_detail: locationDetail(),
-            type: selectedItems()[1],
+            type: categoryToPost,
             level: localStorage.getItem("store_escalation")
         }
 
         // If form si valid submit data to backend
         if (formValidity()) {
-            // FIXME: remove console logs
             const response = await postCreteNewEvent(data)
-            console.log(response)
 
             // Add new overview
-            console.log(overviewData)
             const overviewResponse = postCreateNewOverview(overviewData)
-            console.log(overviewResponse)
 
             if (response.result) {
                 configStore.eventNr.set(null)
@@ -97,6 +110,8 @@ function ItemSelection() {
 
         return itemsAreValid && numberIsValid;
     }
+
+    // TODO: Add selection for incidentLevel in case of Incident
 
     return (
         <div class="fixed inset-0 flex flex-col items-center justify-center">
@@ -131,7 +146,7 @@ function ItemSelection() {
                     {(category) => (
                         <div key={category} onClick={() => handleOnChange(category)}
                              class={"flex items-center justify-center my-1 cursor-pointer p-2 rounded " + (selectedItems().includes(category) ? bgColor.SELECTED : bgColor.NORMAL)}>
-                            <p class={"font-bold" + (textColor.NORMAL)}>{category}</p>
+                            <p class={"font-bold" + textColor.NORMAL}>{category}</p>
                         </div>
                     )}
                 </For>
