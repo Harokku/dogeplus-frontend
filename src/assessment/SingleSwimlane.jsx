@@ -1,12 +1,15 @@
 import AssessmentCard from "./AssestmentCard.jsx";
-import {createSignal, onMount} from "solid-js";
+import {createEffect, createSignal, onMount, Show} from "solid-js";
 import {getEscalationLevelsDefinitions} from "../dataService/escalationLevelsDefinitionsService.js";
 import {parseEnvToBoolean} from "../utils/varCasting.js";
 import {configStore} from "../store/configStore.js";
+import IncidentLevelModal from "./IncidentLevelModal.jsx";
 
 function SingleSwimlane({id, name, cards, store}) {
     const [tooltipData, setTooltipData] = createSignal(null)
     const [fetchError, setFetchError] = createSignal(false)
+    const [isModalOpen, setIsModalOpen] = createSignal(false);
+    const [currentCardId, setCurrentCardId] = createSignal(null);
 
     // Data fetch
     // If tooltipData is already set skip data fetching and return
@@ -34,7 +37,22 @@ function SingleSwimlane({id, name, cards, store}) {
 
         const cardId = event.dataTransfer.getData("cardId");
 
-        store.moveCardToLane(cardId, id)
+        if (name.toLowerCase() === 'incidente') {
+            setCurrentCardId(cardId);
+            setIsModalOpen(true);
+        } else {
+            store.moveCardToLane(cardId, id);
+        }
+    };
+
+    // Handle modal selection return
+    const handleSelect = async (incidentLevel) => {
+        setIsModalOpen(false);
+        await store.moveCardToLane(currentCardId(), id, incidentLevel);
+    };
+
+    const handleCancel = () => {
+        setIsModalOpen(false);
     };
 
     // Define how the swimlane will react to a card being dragged over it
@@ -48,12 +66,23 @@ function SingleSwimlane({id, name, cards, store}) {
         configStore.newEvent.set(true)
     }
 
+    // Watch for isModalOpen state changes
+    createEffect(() => {
+        console.log("isModalOpen changed to: ", isModalOpen());
+    });
+
     return (
         <div
             onDrop={onDrop}
             onDragOver={onDragOver}
             class="w-full border mx-2 p-4"
         >
+            <Show when={isModalOpen()}>
+                <IncidentLevelModal
+                    onSelect={handleSelect}
+                    onCancel={handleCancel}
+                />
+            </Show>
             <div class={"flex justify-center relative"}>
                 {/*Swimlane add button*/}
                 <div class={"absolute left-0 ml-2 h-6 w-6 cursor-pointer tooltip tooltip-bottom tooltip-primary"}

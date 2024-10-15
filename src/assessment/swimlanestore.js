@@ -12,7 +12,7 @@ export function createStore() {
         initializeStore: (data) => {
             setState(data)
         },
-        moveCardToLane: async (cardId, laneId) => {
+        moveCardToLane: async (cardId, laneId, incidentLevel = null) => {
             let lanes = state();
             let card;
             let initialLaneId;
@@ -57,6 +57,11 @@ export function createStore() {
                 eventNumber: parseInt(card.event),
                 newLevel: newLaneName,
                 direction: action,
+            }
+
+            // Add incidentLevel if provided and the lane is 'incidente'
+            if (newLaneName === 'incidente' && incidentLevel) {
+                backendData.incidentLevel = incidentLevel;
             }
 
             // Call backend to persist the change
