@@ -19,6 +19,6 @@ const apiVersion= 'v1'
  * @property {string} backendURL - The backend URL.
  */
 export const config = {
-    backendURL: `http://${baseUrl}/api/${apiVersion}`,
-    wsUrl: `ws://${baseUrl}/api/${apiVersion}/ws`,
+    backendURL: `https://${baseUrl}/api/${apiVersion}`,
+    wsUrl: `wss://${baseUrl}/api/${apiVersion}/ws`,
 }
