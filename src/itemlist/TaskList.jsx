@@ -94,7 +94,7 @@ function TaskList() {
                         <div>
                             <div
                                 class="p-2 max-w-sm mx-auto  rounded-xl shadow-md flex items-center justify-center space-x-4 glass">
-                                <div class="text-xl font-medium text-white text-center">
+                                <div class="text-xl font-medium text-red-500 text-center">
                                     {key}
                                 </div>
                             </div>

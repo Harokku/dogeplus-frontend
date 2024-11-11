@@ -3,7 +3,8 @@
  * The base URL for the server.
  * @type {string}
  */
-const baseUrl= 'localhost:3000'
+// const baseUrl= 'localhost:3000'
+const baseUrl= 'dogeplus-backend.onrender.com'
 
 /**
  * Represents the version of the API.
