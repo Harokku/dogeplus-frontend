@@ -127,10 +127,6 @@ function App() {
 
     return (
         <>
-            {/*<Swimlanes/>*/}
-            {/*<br/>*/}
-            {/*<hr/>*/}
-
             <div class="fixed top-0 left-0 p-4 flex items-center space-x-4 z-20">
                 {/* Button Group Container */}
                 <div class="flex space-x-4">
@@ -169,7 +165,7 @@ function App() {
 
             <NotificationContainer/>
             <StepBar/>
-            <hr/>
+            <br/>
             <ConfigFlow/>
 
             {/*<pre>*/}

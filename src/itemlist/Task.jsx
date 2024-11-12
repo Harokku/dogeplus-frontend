@@ -174,7 +174,7 @@ function Task(props) {
 
     return (
         <>
-            <div role="alert" class={`alert ${getBgColor()} shadow-lg flex my-2`}
+            <div role="alert" class={`alert ${getBgColor()} shadow-2xl flex my-3 transform hover:scale-105 transition-all duration-200 border-transparent hover:border-gray-300`}
                  onClick={() => putDoneState()}>
                 {/*Icon to the left*/}
                 {getIcon()}
@@ -199,7 +199,7 @@ function Task(props) {
 
                     {/*Don't show in normal state (0)*/}
                     <Show when={props.status === statuses.DONE || props.status === statuses.WORKING}>
-                        <p class="badge badge-ghost absolute text-sm right-0 text-gray-300">{getUserTimestamp()}</p>
+                        <p class="badge badge-ghost absolute text-sm right-0 text-amber-700">{getUserTimestamp()}</p>
                     </Show>
                 </div>
             </div>

@@ -37,32 +37,31 @@ function AssessmentCard(props) {
             draggable={true}
             onDragStart={onDragStart}
             onDragEnd={onDragEnd}
-            class={`bg-white rounded-md p-4 m-2 pb-0 shadow-lg ${dragging() ? 'cursor-grabbing' : 'cursor-grab'}`}
+            class={`bg-white rounded-lg p-4 m-2 shadow-md transform ${dragging() ? 'cursor-grabbing scale-95' : 'cursor-grab'} hover:scale-105 transition-transform duration-300`}
             style={{
-                border: `5px solid ${backgroundColor()}`,
+                border: `3px solid ${backgroundColor()}`,
                 "background-color": `${lighterBackgroundColor()}`,
                 color: textColor(),
             }}
             onClick={handleClick}
         >
             <h3 class="font-semibold text-xl mb-2">{`${props.location} - ${props.location_detail}`}</h3>
-            <div class="flex flex-col items-start">
+            <div class="flex flex-col items-start mb-4">
                 <p class="flex justify-between w-full">Evento: <span class="text-lg">{props.event}</span></p>
                 <p class="flex justify-between w-full">Tipo: <span class="text-lg capitalize">{props.type}</span></p>
             </div>
-            <div class={"flex items-center justify-between"}>
-                <span class={"text-sm"}>Completato</span>
-                <div class={"h-1 mx-2 flex-grow bg-gray-300"}>
+            <div class="flex items-center justify-between w-full">
+                <span class="text-sm">Completato</span>
+                <div class="h-1 mx-2 flex-grow bg-gray-300 rounded-full overflow-hidden">
                     <div
-                        class="h-1 "
+                        class="h-1 rounded-full"
                         style={{
                             "background-color": getColor(percentage()),
                             "width": `${percentage()}%`
                         }}
-                    >
-                    </div>
+                    ></div>
                 </div>
-                <span class={"text-sm"}>{percentage()}%</span>
+                <span class="text-sm">{percentage()}%</span>
             </div>
         </div>
     );
