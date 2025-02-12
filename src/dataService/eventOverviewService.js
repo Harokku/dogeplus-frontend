@@ -24,7 +24,7 @@ function getMockData() {
     })
 }
 
-// TODO: Implement backend logic
+// TODO: Adapt the code for incident levels separation
 async function getBackEndData() {
     // Overview data fetching
     const dataUrl = `${config.backendURL}/escalation_aggregation/details/${configStore.central.value}`

@@ -31,10 +31,13 @@ function Swimlane() {
 
     return (
         <>
-            <div class="flex  justify-between">
+            {console.info(store.getState())}
+            <div class="flex justify-between">
                 {store.getState().length > 0 ?
                     store.getState().map(laneData => (
-                        <SingleSwimlane key={laneData.id} {...laneData} store={store}/>
+                        <>
+                            <SingleSwimlane key={laneData.id} {...laneData} store={store}/>
+                        </>
                     )) :
                     defaultSwimlanes.map(laneData => (
                         <SingleSwimlane key={laneData.id} {...laneData} store={store}/>

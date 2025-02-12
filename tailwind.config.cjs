@@ -4,7 +4,10 @@ module.exports = {
         "./src/**/*.{js,jsx,ts,tsx}",
     ],
     theme: {
-        extend: {},
+        extend: {
+            overflow: ['auto'], // Adds overflow-auto utility class
+            whiteSpace: ['nowrap'], // Adds whitespace-nowrap utility class},
+        },
     },
     plugins: [
         require("daisyui")
