@@ -6,16 +6,16 @@ import {postCreateNewOverview, postCreteNewEvent} from "../dataService/activeEve
 import {addNotification, notificationPriorities} from "../store/notificationStore.js";
 import {parseEnvToBoolean} from "../utils/varCasting.js";
 
-function ItemSelection() {
+function CategoriesInput() {
     const [selectedItems, setSelectedItems] = createSignal([])
     const [categories, setCategories] = createSignal(null)
     const [eventNumber, setEventNumber] = createSignal(null)
     const [fetchError, setFetchError] = createSignal(false)
     const [location, setLocation] = createSignal(null)
     const [locationDetail, setLocationDetail] = createSignal(null)
-    const [incidentLevel, setIncidentLevel] = createSignal(null)
+    // Initialize incidentLevel with the value from localStorage if available
+    const storedIncidentLevel = localStorage.getItem("store_incident_level")
     const escalationLevel = localStorage.getItem("store_escalation")
-    const incidentLevels = ["bianca", "verde", "gialla", "rossa"]
     const PRO22 = 'PRO22'
 
     // Data fetching
@@ -54,7 +54,6 @@ function ItemSelection() {
         if (e) e.preventDefault();
         // Clear the array but keep PRO22 if it's present
         setSelectedItems(selectedItems().includes(PRO22) ? [PRO22] : [])
-        setIncidentLevel(null) // Clear the incident level selection
     }
 
     // Save on store and create the new event
@@ -70,13 +69,18 @@ function ItemSelection() {
         // Save the selected category in store (excluding PRO22)
         configStore.categories.set(categoryToPost ? [categoryToPost] : []);
 
+        // Get the current escalation level from localStorage
+        const currentEscalationLevel = localStorage.getItem("store_escalation");
+        // Get the current incident level (if applicable)
+        const currentIncidentLevel = currentEscalationLevel === "incidente" ? storedIncidentLevel : null;
+
         // Call backend and create the event
         const data = {
             categories: categoryToPost,
             event_number: eventNumber(),
             central_id: configStore.central.value,
-            escalation_level: localStorage.getItem("store_escalation"),
-            incident_level: escalationLevel === "incidente" ? incidentLevel() : null,
+            escalation_level: currentEscalationLevel,
+            incident_level: currentIncidentLevel,
         }
 
         const overviewData = {
@@ -85,21 +89,43 @@ function ItemSelection() {
             location: location(),
             location_detail: locationDetail(),
             type: categoryToPost,
-            level: localStorage.getItem("store_escalation")
+            level: currentEscalationLevel,
+            incident_level: currentIncidentLevel
         }
 
-        // If form si valid submit data to backend
+        // If form is valid submit data to backend
         if (formValidity()) {
-            const response = await postCreteNewEvent(data)
+            try {
+                const response = await postCreteNewEvent(data)
 
-            // Add new overview
-            const overviewResponse = postCreateNewOverview(overviewData)
+                if (!response.result) {
+                    addNotification("Errore durante la creazione evento", notificationPriorities.ERROR)
+                    return
+                }
 
-            if (response.result) {
+                // Add new overview
+                try {
+                    const overviewResponse = await postCreateNewOverview(overviewData)
+
+                    if (!overviewResponse.result) {
+                        addNotification("Errore durante la creazione overview", notificationPriorities.ERROR)
+                        // Continue execution as the main event was created successfully
+                    }
+                } catch (overviewError) {
+                    console.error("Error creating overview:", overviewError)
+                    addNotification("Errore durante la creazione overview", notificationPriorities.ERROR)
+                    // Continue execution as the main event was created successfully
+                }
+
+                // If we got here, the main event was created successfully
                 configStore.eventNr.set(null)
                 configStore.newEvent.set(false)
-            } else {
-                addNotification("Errore durante la creazione maxi", notificationPriorities.ERROR)
+                // Clean up localStorage
+                localStorage.removeItem("store_incident_level")
+                addNotification("Evento creato con successo", notificationPriorities.SUCCESS)
+            } catch (error) {
+                console.error("Error creating event:", error)
+                addNotification("Errore durante la creazione evento", notificationPriorities.ERROR)
             }
         }
 
@@ -109,14 +135,12 @@ function ItemSelection() {
     const formValidity = () => {
         const items = selectedItems();
         const number = eventNumber();
-        const escalationLevel = localStorage.getItem('store_escalation');
 
         const itemsAreValid = Array.isArray(items) && items.length > 0;
         const numberIsValid = typeof number === "number" && number > 0;
 
-        const levelValid = escalationLevel !== "incidente" || incidentLevel() !== null;
-
-        return itemsAreValid && numberIsValid && levelValid;
+        // No need to validate incident level as it's set from localStorage
+        return itemsAreValid && numberIsValid;
     }
 
     return (
@@ -124,13 +148,13 @@ function ItemSelection() {
             <Show when={!fetchError()}
                   fallback={<p>Nessuna categoria trovata</p>}
             >
-                <h1>Crea nuovo monitoraggio di livello {localStorage.getItem("store_escalation")}</h1>
+                <h1>Crea nuovo monitoraggio di livello {escalationLevel} {storedIncidentLevel ? `- ${storedIncidentLevel}` : ''}</h1>
                 <br/>
 
                 <input type="text" placeholder="Numero evento"
                        onInput={(e) => {
                            const newValue = e.target.value.replace(/\D/g, '');
-                           setEventNumber(parseInt(newValue))
+                           setEventNumber(newValue ? parseInt(newValue) : null)
                            e.target.value = newValue
                        }}
                        class="mb-6 input input-bordered w-full max-w-xs"/>
@@ -153,27 +177,12 @@ function ItemSelection() {
                         {(category) => (
                             <div key={category} onClick={() => handleOnChange(category)}
                                  className={"flex items-center justify-center my-1 cursor-pointer p-2 rounded " + (selectedItems().includes(category) ? bgColor.SELECTED : bgColor.NORMAL)}>
-                                <p class={"font-bold" + textColor.NORMAL}>{category}</p>
+                                <p class={"font-bold " + textColor.NORMAL}>{category}</p>
                             </div>
                         )}
                     </For>
                 </div>
 
-                <Show when={escalationLevel === "incidente"}>
-                    <div>
-                        <label>Seleziona livello incidente</label>
-                        <div className="flex flex-row gap-2">
-                            <For each={incidentLevels} fallback={<div>Loading...</div>}>
-                                {(level) => (
-                                    <div key={level} onClick={() => setIncidentLevel(level)}
-                                         className={"flex items-center justify-center my-1 cursor-pointer p-2 rounded " + (incidentLevel() === level ? bgColor.SELECTED : bgColor.NORMAL)}>
-                                        <p class={"font-bold " + textColor.NORMAL}>{level}</p>
-                                    </div>
-                                )}
-                            </For>
-                        </div>
-                    </div>
-                </Show>
 
             </Show>
 
@@ -184,7 +193,11 @@ function ItemSelection() {
                 <button type="button" onClick={handleReset} class="btn btn-secondary btn-outline join-item">Cancella
                     selezione
                 </button>
-                <button type="button" onClick={() => configStore.newEvent.set(false)}
+                <button type="button" onClick={() => {
+                            configStore.newEvent.set(false);
+                            // Clean up localStorage when canceling
+                            localStorage.removeItem("store_incident_level");
+                        }}
                         class="btn btn-error btn-outline join-item">Annulla
                     creazione
                 </button>
@@ -193,4 +206,4 @@ function ItemSelection() {
     )
 }
 
-export default ItemSelection
+export default CategoriesInput

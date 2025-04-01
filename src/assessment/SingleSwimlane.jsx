@@ -50,8 +50,22 @@ function SingleSwimlane({id, name, cards, store}) {
 
     const handleAddNewEvent = (event) => {
         event.preventDefault();
-        localStorage.setItem("store_escalation", name.toLowerCase())
-        configStore.newEvent.set(true)
+
+        // Check if this is a subsection of Incidente (bianca, verde, gialla, rossa)
+        const isIncidentSubsection = ['bianca', 'verde', 'gialla', 'rossa'].includes(id.toLowerCase());
+
+        if (isIncidentSubsection) {
+            // For subsections, set escalation level to "incidente" and store the subsection name
+            localStorage.setItem("store_escalation", "incidente");
+            localStorage.setItem("store_incident_level", id.toLowerCase());
+        } else {
+            // For regular swimlanes, just set the escalation level
+            localStorage.setItem("store_escalation", name.toLowerCase());
+            // Clear any previously stored incident level
+            localStorage.removeItem("store_incident_level");
+        }
+
+        configStore.newEvent.set(true);
     }
 
     return (
