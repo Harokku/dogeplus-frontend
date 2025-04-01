@@ -71,6 +71,7 @@ function capitalize(str) {
  * Transforms the server response to the predefined structure.
  *
  * @param {Object} serverResponse - The response object from the server.
+ * @param completionData - Data about completion level
  * @param {Array} serverResponse.data - An array of data objects received from the server.
  * @param {string} serverResponse.result - The result status from the server.
  * @return {Object} The transformed response containing the predefined levels and grouped data.
@@ -82,8 +83,16 @@ function transformResponse(serverResponse, completionData) {
     const predefinedLevels = [
         {id: '1', name: 'Allarme', cards: []},
         {id: '2', name: 'Emergenza', cards: []},
-        {id: '3', name: 'Incidente', cards: []}
+        {id: '3', name: 'Incidente', cards: [], sections: []}
     ];
+
+    // Initialize the sub-sections for "Incidente"
+    const incidentSections = {
+        rossa: [],
+        gialla: [],
+        verde: [],
+        bianca: []
+    };
 
     const groupedData = data.reduce((acc, item) => {
         if (!acc[item.level]) {
@@ -93,22 +102,71 @@ function transformResponse(serverResponse, completionData) {
         return acc;
     }, {});
 
+    // FIXME: Remove after testing
+    // Populate cards for each predefined level
+    // const transformedData = predefinedLevels.map((level) => {
+    //     return {
+    //         id: level.id,
+    //         name: level.name,
+    //         cards: (groupedData[level.name.toLowerCase()] || []).map((item) => ({
+    //             id: item.uuid, // Populate 'id' with 'uuid' field.
+    //             event: item.event_number.toString(), // Convert 'event_number' to string.
+    //             location: item.location,
+    //             location_detail: item.location_detail,
+    //             type: item.type,
+    //             central_id: item.central_id, // Add the 'central_id' field.
+    //             completion: completionData[item.event_number]
+    //         }))
+    //     };
+    // });
+
     // Populate cards for each predefined level
     const transformedData = predefinedLevels.map((level) => {
-        return {
-            id: level.id,
-            name: level.name,
-            cards: (groupedData[level.name.toLowerCase()] || []).map((item) => ({
-                id: item.uuid, // Populate 'id' with 'uuid' field.
-                event: item.event_number.toString(), // Convert 'event_number' to string.
-                location: item.location,
-                location_detail: item.location_detail,
-                type: item.type,
-                central_id: item.central_id, // Add the 'central_id' field.
-                completion: completionData[item.event_number]
-            }))
-        };
+        if (level.id === '3') {
+            // Populate the "Incidente" swimlane with subsections
+            (groupedData['incidente'] || []).forEach((item) => {
+                if (item.incident_level && incidentSections[item.incident_level]) {
+                    incidentSections[item.incident_level].push({
+                        id: item.uuid,
+                        event: item.event_number.toString(),
+                        location: item.location,
+                        location_detail: item.location_detail,
+                        type: item.type,
+                        central_id: item.central_id,
+                        completion: completionData[item.event_number]
+                    });
+                }
+            });
+
+            return {
+                id: level.id,
+                name: level.name,
+                cards: [], // Keep `cards` empty for parent lane
+                sections: [
+                    {id: 'rossa', name: 'Rossa', cards: incidentSections.rossa},
+                    {id: 'gialla', name: 'Gialla', cards: incidentSections.gialla},
+                    {id: 'verde', name: 'Verde', cards: incidentSections.verde},
+                    {id: 'bianca', name: 'Bianca', cards: incidentSections.bianca}
+                ]
+            };
+        } else {
+            // Populate other swimlanes normally
+            return {
+                id: level.id,
+                name: level.name,
+                cards: (groupedData[level.name.toLowerCase()] || []).map((item) => ({
+                    id: item.uuid,
+                    event: item.event_number.toString(),
+                    location: item.location,
+                    location_detail: item.location_detail,
+                    type: item.type,
+                    central_id: item.central_id,
+                    completion: completionData[item.event_number]
+                }))
+            };
+        }
     });
+
 
     return {
         data: transformedData,
@@ -118,14 +176,21 @@ function transformResponse(serverResponse, completionData) {
 }
 
 async function postBackEndData(data) {
-    const url = `${config.backendURL}/escalation_aggregation/${data.direction}`
+    // Use the direction from the data object directly
+    const direction = data.direction;
+
+    const url = `${config.backendURL}/escalation_aggregation/${direction}`
+
+    // Create a copy of the data to avoid modifying the original
+    const postData = { ...data };
+
     const response = await fetch(url, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'accept': 'application/json',
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify(postData)
     })
     if (!response.ok) {
         throw new Error(response.statusText);
@@ -145,4 +210,3 @@ async function postBackEndData(data) {
 export const getEventOverview = createDataService(getBackEndData, getMockData)
 
 export const postEscalateEvent = createUpdateDataService(postBackEndData)
-
