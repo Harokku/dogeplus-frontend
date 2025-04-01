@@ -5,9 +5,19 @@ import {parseEnvToBoolean} from "../utils/varCasting.js";
 import {configStore} from "../store/configStore.js";
 import IncidentLevelModal from "./IncidentLevelModal.jsx";
 
-function SingleSwimlane({id, name, cards, store}) {
+function SingleSwimlane({id, name, cards, store, updateParentRef}) {
     const [tooltipData, setTooltipData] = createSignal(null)
     const [fetchError, setFetchError] = createSignal(false)
+    let swimlaneRef
+
+    // Update parent ref when component mounts or cards change
+    createEffect(() => {
+        // Access cards to create a dependency
+        const _ = cards.length
+        if (updateParentRef && swimlaneRef) {
+            updateParentRef(swimlaneRef)
+        }
+    })
 
     // Data fetch
     // If tooltipData is already set skip data fetching and return
@@ -70,9 +80,11 @@ function SingleSwimlane({id, name, cards, store}) {
 
     return (
         <div
+            ref={el => swimlaneRef = el}
             onDrop={onDrop}
             onDragOver={onDragOver}
-            class="w-full border border-gray-300 rounded-lg mx-2 p-4 bg-gray-50"
+            class="w-full border border-gray-300 rounded-lg p-4 bg-gray-50"
+            style="height: 100%; display: flex; flex-direction: column;"
         >
             <div
                 class="flex justify-center relative mb-8 p-4 rounded-xl shadow-2xl bg-gradient-to-br from-blue-50 to-white transform hover:scale-105 transition-transform duration-300 border border-gray-200">
@@ -101,7 +113,9 @@ function SingleSwimlane({id, name, cards, store}) {
                     </svg>
                 </div>
             </div>
-            {cards.map(cardData => <AssessmentCard key={cardData.id} {...cardData} />)}
+            <div style="overflow-y: auto; flex: 1;">
+                {cards.map(cardData => <AssessmentCard key={cardData.id} {...cardData} />)}
+            </div>
         </div>
     );
 }
