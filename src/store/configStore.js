@@ -1,3 +1,22 @@
+/**
+ * Configuration Store Module
+ * 
+ * This module provides a centralized store for managing application configuration settings.
+ * It uses SolidJS's createRoot and createSignal for state management with persistence to localStorage.
+ * 
+ * The store manages several key configuration values:
+ * - username: The current user's username
+ * - central: The central ID (dispatch center)
+ * - eventNr: The current event number being handled
+ * - categories: The available service categories
+ * - newEvent: Flag indicating if a new event is being created
+ * 
+ * The module also tracks the current configuration step to guide users through
+ * the configuration process in the correct order.
+ * 
+ * When certain values change (like central ID), dependent values are automatically cleared
+ * to maintain data consistency.
+ */
 import {createEffect, createRoot, createSignal} from 'solid-js';
 
 /**

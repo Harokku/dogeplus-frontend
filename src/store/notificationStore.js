@@ -1,8 +1,22 @@
+/**
+ * Notification Store Module
+ * 
+ * This module provides a centralized store for managing application notifications.
+ * It uses SolidJS's createStore for state management and includes:
+ * - A frozen enum of notification priorities
+ * - A store for holding current notifications
+ * - A function for adding notifications with automatic removal after a timeout
+ * 
+ * Notifications are displayed to users to provide feedback about operations
+ * (success, error, warning, info) and are automatically removed after a short period.
+ */
 import {createStore} from "solid-js/store";
 import {onCleanup} from "solid-js";
 
 /**
- * @description Object containing notification priorities.
+ * Object containing notification priorities.
+ * These priorities determine the visual styling of notifications.
+ * 
  * @type {object}
  * @property {string} NEUTRAL - Empty string for neutral priority.
  * @property {string} INFO - CSS class for informational priority.
@@ -18,7 +32,15 @@ export const notificationPriorities = Object.freeze({
     ERROR:"error",
 })
 
-// Notification store
+/**
+ * The notification store and its setter function.
+ * This store holds an array of notification objects, each with text and priority properties.
+ * Components can subscribe to this store to display notifications to users.
+ * 
+ * @type {[Array<{text: string, priority: string}>, Function]} A tuple containing:
+ *   - notifications: Array of notification objects
+ *   - setNotifications: Function to update the notifications array
+ */
 export const [notifications, setNotifications] = createStore([])
 
 /**

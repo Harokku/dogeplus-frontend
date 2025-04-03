@@ -1,3 +1,17 @@
+/**
+ * Main Application Component
+ * 
+ * This is the root component of the DogePlus frontend application.
+ * It serves as the entry point and main container for the application,
+ * orchestrating the overall layout and component hierarchy.
+ * 
+ * The App component:
+ * - Manages the configuration flow for user setup
+ * - Provides file upload functionality for local and global configurations
+ * - Displays notifications to the user
+ * - Renders the navigation step bar
+ * - Conditionally renders the appropriate view based on the current configuration state
+ */
 import './App.css'
 import ConfigFlow from "./config/ConfigFlow.jsx";
 import {configStore} from "./store/configStore.js";
@@ -7,7 +21,11 @@ import Swimlanes from "./assessment/Swimlanes.jsx";
 import {createSignal} from "solid-js";
 import {config} from "./dataService/config.js";
 
-
+/**
+ * The main application component that serves as the entry point for the DogePlus frontend.
+ * 
+ * @returns {JSX.Element} The rendered application UI
+ */
 function App() {
     const [selectedFile, setSelectedFile] = createSignal(null);
 
@@ -125,12 +143,23 @@ function App() {
         global: handleGlobalUpload
     }
 
+    /**
+     * Renders the application UI with the following structure:
+     * 1. File upload buttons in the top-left corner
+     * 2. Notification container for displaying system messages
+     * 3. Step bar navigation showing the current configuration step
+     * 4. Configuration flow component for user setup
+     * 
+     * The file upload buttons use a pattern where the actual file input is hidden
+     * and styled buttons trigger the file selection dialog.
+     */
     return (
         <>
+            {/* File upload buttons fixed to the top-left corner */}
             <div class="fixed top-0 left-0 p-4 flex items-center space-x-4 z-20">
                 {/* Button Group Container */}
                 <div class="flex space-x-4">
-                    {/* First Button Wrapper */}
+                    {/* Local integration file upload button */}
                     <div class="relative">
                         <input
                             type="file"
@@ -145,7 +174,7 @@ function App() {
                             Carica integrazione locale
                         </button>
                     </div>
-                    {/* Second Button Wrapper */}
+                    {/* Global configuration file upload button */}
                     <div class="relative">
                         <input
                             type="file"
@@ -163,9 +192,14 @@ function App() {
                 </div>
             </div>
 
+            {/* Notification system for displaying messages to the user */}
             <NotificationContainer/>
+
+            {/* Navigation bar showing the current configuration step */}
             <StepBar/>
             <br/>
+
+            {/* Main configuration flow component for user setup */}
             <ConfigFlow/>
 
         </>

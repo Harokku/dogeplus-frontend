@@ -1,5 +1,16 @@
 
 /**
+ * Configuration Module
+ * 
+ * This module defines the configuration settings for connecting to backend services.
+ * It reads environment variables provided by Vite at build time and constructs
+ * appropriate URLs for both HTTP API and WebSocket connections.
+ * 
+ * The configuration automatically adjusts between development and production environments,
+ * using appropriate protocols (HTTP/HTTPS, WS/WSS) based on the current environment.
+ */
+
+/**
  * The base URL for the server.
  *
  *const baseUrl= 'localhost:3000'
