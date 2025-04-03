@@ -63,7 +63,7 @@ function Swimlane() {
 
     return (
         <>
-            <div class="flex justify-between space-x-4 h-[80vh]">
+            <div class="flex justify-between space-x-4 h-[80vh] overflow-hidden">
                 {store.getState().length > 0
                     ? store.getState().map((laneData) => (
                         <>
@@ -81,10 +81,10 @@ function Swimlane() {
                                     <div class="sections flex flex-col mt-4 overflow-y-auto flex-1">
                                         {laneData.sections.map((section) => (
                                             <div class="flex-1 mb-2">
-                                                <SingleSwimlane 
-                                                    key={section.id} 
-                                                    {...section} 
-                                                    store={store} 
+                                                <SingleSwimlane
+                                                    key={section.id}
+                                                    {...section}
+                                                    store={store}
                                                     updateParentRef={(ref) => updateSwimlanesRef(`${laneData.id}-${section.id}`, ref)}
                                                 />
                                             </div>
@@ -93,17 +93,14 @@ function Swimlane() {
                                 </div>
                             ) : (
                                 // Render regular swimlane
-                                <div 
-                                    class="w-1/3 min-w-[30%] h-full flex flex-col" 
+                                <div
+                                    class="w-1/3 min-w-[30%] h-full flex flex-col"
                                     ref={(el) => updateSwimlanesRef(laneData.id, el)}>
-                                    <div class="flex-none sticky top-0 z-10 bg-gradient-to-br from-blue-50 to-white rounded-t-lg p-4 border border-gray-300 border-b-0">
-                                        <h2 class="text-center font-bold text-gray-800">{laneData.name}</h2>
-                                    </div>
-                                    <div class="flex-1 overflow-y-auto border border-gray-300 rounded-b-lg">
-                                        <SingleSwimlane 
-                                            key={laneData.id} 
-                                            {...laneData} 
-                                            store={store} 
+                                    <div class="flex-1 overflow-y-auto">
+                                        <SingleSwimlane
+                                            key={laneData.id}
+                                            {...laneData}
+                                            store={store}
                                             updateParentRef={(ref) => updateSwimlanesRef(laneData.id, ref)}
                                         />
                                     </div>
@@ -124,10 +121,10 @@ function Swimlane() {
                                     <div class="sections flex flex-col mt-4 overflow-y-auto flex-1">
                                         {laneData.sections.map((section) => (
                                             <div class="flex-1 mb-2">
-                                                <SingleSwimlane 
-                                                    key={section.id} 
-                                                    {...section} 
-                                                    store={store} 
+                                                <SingleSwimlane
+                                                    key={section.id}
+                                                    {...section}
+                                                    store={store}
                                                     updateParentRef={(ref) => updateSwimlanesRef(`${laneData.id}-${section.id}`, ref)}
                                                 />
                                             </div>
@@ -135,17 +132,14 @@ function Swimlane() {
                                     </div>
                                 </div>
                             ) : (
-                                <div 
-                                    class="w-1/3 min-w-[30%] h-full flex flex-col" 
+                                <div
+                                    class="w-1/3 min-w-[30%] h-full flex flex-col"
                                     ref={(el) => updateSwimlanesRef(laneData.id, el)}>
-                                    <div class="flex-none sticky top-0 z-10 bg-gradient-to-br from-blue-50 to-white rounded-t-lg p-4 border border-gray-300 border-b-0">
-                                        <h2 class="text-center font-bold text-gray-800">{laneData.name}</h2>
-                                    </div>
-                                    <div class="flex-1 overflow-y-auto border border-gray-300 rounded-b-lg">
-                                        <SingleSwimlane 
-                                            key={laneData.id} 
-                                            {...laneData} 
-                                            store={store} 
+                                    <div class="flex-1 overflow-y-auto">
+                                        <SingleSwimlane
+                                            key={laneData.id}
+                                            {...laneData}
+                                            store={store}
                                             updateParentRef={(ref) => updateSwimlanesRef(laneData.id, ref)}
                                         />
                                     </div>
