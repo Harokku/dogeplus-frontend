@@ -1,10 +1,10 @@
 export const bgColor = Object.freeze({
-    NORMAL:"bg-gray-200",
-    SELECTED: "bg-blue-500",
+    NORMAL: "bg-gray-200",
+    SELECTED: "bg-orange-700",
 })
 
 export const textColor = {
-    NORMAL:"text-gray-700",
+    NORMAL: "text-gray-700",
 }
 
 export const buttonHoverColors = Object.freeze({
@@ -17,8 +17,8 @@ export const buttonHoverColors = Object.freeze({
 
 export const borderColors = Object.freeze({
     SRA: "border-4 border-yellow-500 hover:border-none",
-    SRL: "border-4 border-blue-500",
-    SRM: "border-4 border-red-500",
-    SRP: "border-4 border-green-500",
-    GLOBALE: "border-4 border-purple-500",
+    SRL: "border-4 border-blue-500 hover:border-none",
+    SRM: "border-4 border-red-500 hover:border-none",
+    SRP: "border-4 border-green-500 hover:border-none",
+    GLOBALE: "border-4 border-purple-500 hover:border-none",
 })

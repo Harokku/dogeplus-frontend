@@ -148,7 +148,10 @@ function CategoriesInput() {
             <Show when={!fetchError()}
                   fallback={<p>Nessuna categoria trovata</p>}
             >
-                <h1>Crea nuovo monitoraggio di livello {escalationLevel} {storedIncidentLevel ? `- ${storedIncidentLevel}` : ''}</h1>
+                <h1 class="text-xl  uppercase">Crea nuovo monitoraggio di livello<br/>
+                    <span
+                        class="font-bold text-accent uppercase text-2xl"> {escalationLevel} {storedIncidentLevel ? `- ${storedIncidentLevel}` : ''} </span>
+                </h1>
                 <br/>
 
                 <input type="text" placeholder="Numero evento"
@@ -157,21 +160,21 @@ function CategoriesInput() {
                            setEventNumber(newValue ? parseInt(newValue) : null)
                            e.target.value = newValue
                        }}
-                       class="mb-6 input input-bordered w-full max-w-xs"/>
+                       class="mb-6 input input-bordered border-4 border-slate-600 w-full max-w-xs"/>
 
                 <input type={"text"} placeholder={"Luogo Evento"}
                        onInput={(e) => {
                            setLocation(e.target.value)
                        }}
-                       class="mb-6 input input-bordered w-full max-w-xs"/>
+                       class="mb-6 input input-bordered border-4 border-slate-600 w-full max-w-xs"/>
 
                 <input type={"text"} placeholder={"Dettaglio Luogo Evento"}
                        onInput={(e) => {
                            setLocationDetail(e.target.value)
                        }}
-                       class="mb-6 input input-bordered w-full max-w-xs"/>
+                       class="mb-6 input input-bordered border-4 border-slate-600 w-full max-w-xs"/>
 
-                <label>Seleziona categorie</label>
+                <label class="text-xl uppercase">Seleziona categorie</label>
                 <div className="flex flex-row gap-2">
                     <For each={categories()} fallback={<div>Loading...</div>}>
                         {(category) => (
@@ -190,16 +193,15 @@ function CategoriesInput() {
                 <button type="button" disabled={!formValidity()} onClick={handleOnSubmit}
                         class="btn btn-success join-item">Crea evento
                 </button>
-                <button type="button" onClick={handleReset} class="btn btn-secondary btn-outline join-item">Cancella
+                <button type="button" onClick={handleReset} class="btn text-amber-500 hover:bg-amber-500 border-amber-500 hover:border-amber-500 btn-outline join-item">Cancella
                     selezione
                 </button>
                 <button type="button" onClick={() => {
-                            configStore.newEvent.set(false);
-                            // Clean up localStorage when canceling
-                            localStorage.removeItem("store_incident_level");
-                        }}
-                        class="btn btn-error btn-outline join-item">Annulla
-                    creazione
+                    configStore.newEvent.set(false);
+                    // Clean up localStorage when canceling
+                    localStorage.removeItem("store_incident_level");
+                }}
+                        class="btn btn-error btn-outline join-item">Annulla creazione
                 </button>
             </div>
         </div>

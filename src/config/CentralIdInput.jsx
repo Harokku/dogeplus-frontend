@@ -20,7 +20,7 @@ function CentralIdInput() {
     return (
         <div class="fixed inset-0 flex items-center justify-center">
             <div class="flex flex-col items-center justify-center gap-8">
-                <h2 class="uppercase text-3xl font-bold mb-8 pb-2 border-b-2 border-gray-300">Seleziona Centrale</h2>
+                <h2 class="uppercase text-accent text-3xl font-bold mb-8 pb-2 border-b-2 border-gray-300">Seleziona Centrale</h2>
 
                 {/* Top row - 2 buttons */}
                 <div class="flex gap-8 justify-center">
