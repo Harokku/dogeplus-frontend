@@ -1,6 +1,7 @@
 import {createMemo, createSignal} from "solid-js";
 import {getColor, getTextColor, lightenColor} from "../utils/colorsHelper.js";
 import {configStore} from "../store/configStore.js";
+import {assessmentCardBG} from "../theme/bg.js";
 
 function AssessmentCard(props) {
     const [dragging, setDragging] = createSignal(false)
@@ -18,13 +19,24 @@ function AssessmentCard(props) {
         setDragging(false)
     }
 
-    // Compute percentage and colors reactively
+    // Compute percentage reactively
     const percentage = createMemo(() => {
         return Math.round((props.completion.completed / props.completion.total) * 100);
     });
-    const backgroundColor = createMemo(() => getColor(percentage()));
-    const lighterBackgroundColor = createMemo(() => lightenColor(backgroundColor(), 80));
-    const textColor = createMemo(() => getTextColor(lighterBackgroundColor()));
+
+    // Get background color based on swimlane
+    const swimlaneBackgroundColor = createMemo(() => {
+        // Convert swimlane name to uppercase to match the keys in assessmentCardBG
+        const swimlaneKey = props.swimlane ? props.swimlane.toUpperCase() : 'BIANCA';
+        // Use the corresponding background color from assessmentCardBG
+        return assessmentCardBG[swimlaneKey] || assessmentCardBG.BIANCA;
+    });
+
+    // For the progress bar, still use the completion percentage
+    const progressBarColor = createMemo(() => getColor(percentage()));
+
+    // For text color, use a contrasting color based on the swimlane background
+    const textColor = createMemo(() => getTextColor(swimlaneBackgroundColor()));
 
     // Handle click to set event number and display associated tasks
     const handleClick = () => {
@@ -39,8 +51,8 @@ function AssessmentCard(props) {
             onDragEnd={onDragEnd}
             class={`bg-white rounded-lg p-4 m-2 shadow-md transform ${dragging() ? 'cursor-grabbing scale-95' : 'cursor-grab'} hover:scale-105 transition-transform duration-300`}
             style={{
-                border: `3px solid ${backgroundColor()}`,
-                "background-color": `${lighterBackgroundColor()}`,
+                border: `3px solid ${progressBarColor()}`,
+                "background-color": `${swimlaneBackgroundColor()}`,
                 color: textColor(),
             }}
             onClick={handleClick}
@@ -56,13 +68,15 @@ function AssessmentCard(props) {
                     <div
                         class="h-1 rounded-full"
                         style={{
-                            "background-color": getColor(percentage()),
+                            "background-color": progressBarColor(),
                             "width": `${percentage()}%`
                         }}
                     ></div>
                 </div>
                 <span class="text-sm">{percentage()}%</span>
             </div>
+            {console.log(getTextColor("13% 0.028 261.692"))}
+            {console.log(getTextColor("97.7% 0.017 320.058"))}
         </div>
     );
 }

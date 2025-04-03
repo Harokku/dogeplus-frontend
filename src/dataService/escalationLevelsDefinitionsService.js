@@ -39,7 +39,7 @@ async function getBackEndData() {
                 description: "Evento dannoso per i soggetti coinvolti in cui si rende necessario attivare il PIM (Piano Interno Maxiemergenza"
             },
             {name: "Bianca", description: "Fino a ( <= ) 10 coinvolti"},
-            {name: "Verde", description: "Da 11 a 20 coinvolti"},
+            {name: "Verde", description: "Da 21 a 20 coinvolti"},
             {name: "Gialla", description: "Da 11 a 50 coinvolti"},
             {name: "Rossa", description: "Oltre ( > ) 50 coinvolti"},
         ],

@@ -123,7 +123,7 @@ function SingleSwimlane({id, name, cards, store, updateParentRef, tooltipData: e
                 </div>
             </div>
             <div class="overflow-y-auto flex-1">
-                {cards.map(cardData => <AssessmentCard key={cardData.id} {...cardData} />)}
+                {cards.map(cardData => <AssessmentCard key={cardData.id} {...cardData} swimlane={name.toLowerCase()} />)}
             </div>
         </div>
     );

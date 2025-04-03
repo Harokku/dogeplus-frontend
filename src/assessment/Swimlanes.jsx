@@ -89,7 +89,7 @@ function Swimlane() {
 
     return (
         <>
-            <div class="flex justify-between space-x-4 h-[80vh] overflow-hidden">
+            <div class="flex justify-between space-x-4 h-[85vh] overflow-hidden">
                 {store.getState().length > 0
                     ? store.getState().map((laneData) => (
                         <>
