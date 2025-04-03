@@ -63,7 +63,7 @@ function Swimlane() {
 
     return (
         <>
-            <div class="flex justify-between space-x-4" style="height: calc(100vh - 120px);">
+            <div class="flex justify-between space-x-4 h-[80vh]">
                 {store.getState().length > 0
                     ? store.getState().map((laneData) => (
                         <>
@@ -71,20 +71,16 @@ function Swimlane() {
                                 // Render parent swimlane with sections
                                 <div key={laneData.id}
                                      ref={(el) => updateSwimlanesRef(laneData.id, el)}
-                                     class="w-1/3 border border-gray-300 rounded-lg p-4 bg-gray-50"
-                                     style={{
-                                         minWidth: '30%', 
-                                         height: maxHeight() > 0 ? `${maxHeight()}px` : '100%'
-                                     }}>
+                                     class="w-1/3 min-w-[30%] border border-gray-300 rounded-lg p-4 bg-gray-50 h-full flex flex-col">
 
                                     <div
-                                        class="flex justify-center relative mb-8 p-4 rounded-xl shadow-2xl bg-gradient-to-br from-blue-50 to-white transform hover:scale-105 transition-transform duration-300 border border-gray-200">
+                                        class="flex justify-center relative p-4 rounded-xl shadow-2xl bg-gradient-to-br from-blue-50 to-white transform hover:scale-105 transition-transform duration-300 border border-gray-200 sticky top-0 z-10">
                                         <h2 class="text-center font-bold text-gray-800">{laneData.name}</h2>
                                     </div>
 
-                                    <div class="sections flex flex-col" style="height: calc(100% - 80px);">
+                                    <div class="sections flex flex-col mt-4 overflow-y-auto flex-1">
                                         {laneData.sections.map((section) => (
-                                            <div style="flex: 1; margin-bottom: 8px;">
+                                            <div class="flex-1 mb-2">
                                                 <SingleSwimlane 
                                                     key={section.id} 
                                                     {...section} 
@@ -98,18 +94,19 @@ function Swimlane() {
                             ) : (
                                 // Render regular swimlane
                                 <div 
-                                    class="w-1/3" 
-                                    ref={(el) => updateSwimlanesRef(laneData.id, el)}
-                                    style={{
-                                        minWidth: '30%', 
-                                        height: maxHeight() > 0 ? `${maxHeight()}px` : '100%'
-                                    }}>
-                                    <SingleSwimlane 
-                                        key={laneData.id} 
-                                        {...laneData} 
-                                        store={store} 
-                                        updateParentRef={(ref) => updateSwimlanesRef(laneData.id, ref)}
-                                    />
+                                    class="w-1/3 min-w-[30%] h-full flex flex-col" 
+                                    ref={(el) => updateSwimlanesRef(laneData.id, el)}>
+                                    <div class="flex-none sticky top-0 z-10 bg-gradient-to-br from-blue-50 to-white rounded-t-lg p-4 border border-gray-300 border-b-0">
+                                        <h2 class="text-center font-bold text-gray-800">{laneData.name}</h2>
+                                    </div>
+                                    <div class="flex-1 overflow-y-auto border border-gray-300 rounded-b-lg">
+                                        <SingleSwimlane 
+                                            key={laneData.id} 
+                                            {...laneData} 
+                                            store={store} 
+                                            updateParentRef={(ref) => updateSwimlanesRef(laneData.id, ref)}
+                                        />
+                                    </div>
                                 </div>
                             )}
                         </>
@@ -119,18 +116,14 @@ function Swimlane() {
                             {laneData.sections ? (
                                 <div key={laneData.id}
                                      ref={(el) => updateSwimlanesRef(laneData.id, el)}
-                                     class="w-1/3 border border-gray-300 rounded-lg p-4 bg-gray-50"
-                                     style={{
-                                         minWidth: '30%', 
-                                         height: maxHeight() > 0 ? `${maxHeight()}px` : '100%'
-                                     }}>
+                                     class="w-1/3 min-w-[30%] border border-gray-300 rounded-lg p-4 bg-gray-50 h-full flex flex-col">
                                     <div
-                                        class="flex justify-center relative mb-8 p-4 rounded-xl shadow-2xl bg-gradient-to-br from-blue-50 to-white transform hover:scale-105 transition-transform duration-300 border border-gray-200">
+                                        class="flex justify-center relative p-4 rounded-xl shadow-2xl bg-gradient-to-br from-blue-50 to-white transform hover:scale-105 transition-transform duration-300 border border-gray-200 sticky top-0 z-10">
                                         <h2 class="text-center font-bold text-gray-800">{laneData.name}</h2>
                                     </div>
-                                    <div class="sections flex flex-col" style="height: calc(100% - 80px);">
+                                    <div class="sections flex flex-col mt-4 overflow-y-auto flex-1">
                                         {laneData.sections.map((section) => (
-                                            <div style="flex: 1; margin-bottom: 8px;">
+                                            <div class="flex-1 mb-2">
                                                 <SingleSwimlane 
                                                     key={section.id} 
                                                     {...section} 
@@ -143,18 +136,19 @@ function Swimlane() {
                                 </div>
                             ) : (
                                 <div 
-                                    class="w-1/3" 
-                                    ref={(el) => updateSwimlanesRef(laneData.id, el)}
-                                    style={{
-                                        minWidth: '30%', 
-                                        height: maxHeight() > 0 ? `${maxHeight()}px` : '100%'
-                                    }}>
-                                    <SingleSwimlane 
-                                        key={laneData.id} 
-                                        {...laneData} 
-                                        store={store} 
-                                        updateParentRef={(ref) => updateSwimlanesRef(laneData.id, ref)}
-                                    />
+                                    class="w-1/3 min-w-[30%] h-full flex flex-col" 
+                                    ref={(el) => updateSwimlanesRef(laneData.id, el)}>
+                                    <div class="flex-none sticky top-0 z-10 bg-gradient-to-br from-blue-50 to-white rounded-t-lg p-4 border border-gray-300 border-b-0">
+                                        <h2 class="text-center font-bold text-gray-800">{laneData.name}</h2>
+                                    </div>
+                                    <div class="flex-1 overflow-y-auto border border-gray-300 rounded-b-lg">
+                                        <SingleSwimlane 
+                                            key={laneData.id} 
+                                            {...laneData} 
+                                            store={store} 
+                                            updateParentRef={(ref) => updateSwimlanesRef(laneData.id, ref)}
+                                        />
+                                    </div>
                                 </div>
                             )}
                         </>

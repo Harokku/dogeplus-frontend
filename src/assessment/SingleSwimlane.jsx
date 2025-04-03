@@ -83,11 +83,10 @@ function SingleSwimlane({id, name, cards, store, updateParentRef}) {
             ref={el => swimlaneRef = el}
             onDrop={onDrop}
             onDragOver={onDragOver}
-            class="w-full border border-gray-300 rounded-lg p-4 bg-gray-50"
-            style="height: 100%; display: flex; flex-direction: column;"
+            class="w-full border border-gray-300 rounded-lg p-4 bg-gray-50 h-full flex flex-col"
         >
             <div
-                class="flex justify-center relative mb-8 p-4 rounded-xl shadow-2xl bg-gradient-to-br from-blue-50 to-white transform hover:scale-105 transition-transform duration-300 border border-gray-200">
+                class="flex justify-center relative mb-4 p-4 rounded-xl shadow-2xl bg-gradient-to-br from-blue-50 to-white transform hover:scale-105 transition-transform duration-300 border border-gray-200">
                 {/* Swimlane add button */}
                 <div class="absolute left-0 ml-2 h-6 w-6 cursor-pointer tooltip tooltip-bottom tooltip-primary"
                      onclick={handleAddNewEvent}
@@ -113,7 +112,7 @@ function SingleSwimlane({id, name, cards, store, updateParentRef}) {
                     </svg>
                 </div>
             </div>
-            <div style="overflow-y: auto; flex: 1;">
+            <div class="overflow-y-auto flex-1">
                 {cards.map(cardData => <AssessmentCard key={cardData.id} {...cardData} />)}
             </div>
         </div>

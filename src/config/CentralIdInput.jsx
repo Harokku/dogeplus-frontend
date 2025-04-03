@@ -1,6 +1,6 @@
 import {configStore} from "../store/configStore.js";
 import {createSignal} from "solid-js";
-import {buttonHoverColors} from "../theme/bg.js";
+import {buttonHoverColors, borderColors} from "../theme/bg.js";
 
 function CentralIdInput() {
     const [id, setId] = createSignal("");
@@ -29,7 +29,11 @@ function CentralIdInput() {
                             key={centralId}
                             type="button"
                             onClick={() => handleSelectId(centralId)}
-                            class={`btn ${id() === centralId ? 'btn-primary' : 'btn-outline'} px-8 py-3 text-lg shadow-md hover:shadow-lg transform transition-all duration-200 hover:scale-105 ${buttonHoverColors[centralId]}`}
+                            class={`btn ${id() === centralId ? 'btn-primary' : 'btn-outline'} 
+                            px-8  text-lg shadow-md hover:shadow-lg 
+                            transform transition-all duration-200 hover:scale-105 
+                             ${borderColors[centralId]} 
+                            ${buttonHoverColors[centralId]}`}
                         >
                             {centralId}
                         </button>
@@ -42,7 +46,11 @@ function CentralIdInput() {
                         key={middleId}
                         type="button"
                         onClick={() => handleSelectId(middleId)}
-                        class={`btn ${id() === middleId ? 'btn-primary' : 'btn-outline'} px-8 py-3 text-lg shadow-md hover:shadow-lg transform transition-all duration-200 hover:scale-105 ${buttonHoverColors[middleId]}`}
+                        class={`btn ${id() === middleId ? 'btn-primary' : 'btn-outline'} 
+                        px-8  text-lg shadow-md hover:shadow-lg 
+                        transform transition-all duration-200 hover:scale-105 
+                         ${borderColors[middleId]} 
+                        ${buttonHoverColors[middleId]}`}
                     >
                         {middleId}
                     </button>
@@ -55,7 +63,11 @@ function CentralIdInput() {
                             key={centralId}
                             type="button"
                             onClick={() => handleSelectId(centralId)}
-                            class={`btn ${id() === centralId ? 'btn-primary' : 'btn-outline'} px-8 py-3 text-lg shadow-md hover:shadow-lg transform transition-all duration-200 hover:scale-105 ${buttonHoverColors[centralId]}`}
+                            class={`btn ${id() === centralId ? 'btn-primary' : 'btn-outline'} 
+                            px-8  text-lg shadow-md hover:shadow-lg 
+                            transform transition-all duration-200 hover:scale-105 
+                             ${borderColors[centralId]} 
+                            ${buttonHoverColors[centralId]}`}
                         >
                             {centralId}
                         </button>

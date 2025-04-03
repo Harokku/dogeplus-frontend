@@ -14,3 +14,11 @@ export const buttonHoverColors = Object.freeze({
     SRP: "hover:bg-green-500",
     GLOBALE: "hover:bg-purple-500",
 })
+
+export const borderColors = Object.freeze({
+    SRA: "border-4 border-yellow-500 hover:border-none",
+    SRL: "border-4 border-blue-500",
+    SRM: "border-4 border-red-500",
+    SRP: "border-4 border-green-500",
+    GLOBALE: "border-4 border-purple-500",
+})
