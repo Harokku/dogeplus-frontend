@@ -5,10 +5,14 @@ import {parseEnvToBoolean} from "../utils/varCasting.js";
 import {configStore} from "../store/configStore.js";
 import IncidentLevelModal from "./IncidentLevelModal.jsx";
 
-function SingleSwimlane({id, name, cards, store, updateParentRef}) {
-    const [tooltipData, setTooltipData] = createSignal(null)
+function SingleSwimlane({id, name, cards, store, updateParentRef, tooltipData: externalTooltipData, fetchTooltipData: externalFetchTooltipData}) {
+    // Use external tooltip data if provided, otherwise use internal state
+    const [internalTooltipData, setInternalTooltipData] = createSignal(null)
     const [fetchError, setFetchError] = createSignal(false)
     let swimlaneRef
+
+    // Function to get tooltip data (either from props or internal state)
+    const getTooltipData = () => externalTooltipData || internalTooltipData()
 
     // Update parent ref when component mounts or cards change
     createEffect(() => {
@@ -22,8 +26,14 @@ function SingleSwimlane({id, name, cards, store, updateParentRef}) {
     // Data fetch
     // If tooltipData is already set skip data fetching and return
     const fetchData = async () => {
-        // Check if tooltipData is set and return
-        if (tooltipData() !== null) return
+        // If external fetch function is provided, use it
+        if (externalFetchTooltipData) {
+            externalFetchTooltipData();
+            return;
+        }
+
+        // Check if internal tooltipData is set and return
+        if (internalTooltipData() !== null) return;
 
         // Actually fetch data
         const response = await getEscalationLevelsDefinitions(parseEnvToBoolean(import.meta.env.VITE_MOCK) || false)
@@ -32,7 +42,7 @@ function SingleSwimlane({id, name, cards, store, updateParentRef}) {
             const levelDefinition = response.data.data.find(item => item.name === name)
             // If Found set the tooltip data with the description
             if (levelDefinition) {
-                setTooltipData(levelDefinition.description)
+                setInternalTooltipData(levelDefinition.description)
             }
         } else {
             setFetchError(true)
@@ -104,7 +114,7 @@ function SingleSwimlane({id, name, cards, store, updateParentRef}) {
                 {/* Swimlane info tooltip */}
                 <div onMouseEnter={fetchData}
                      class="absolute right-0 mr-2 h-6 w-6 cursor-help tooltip tooltip-left tooltip-info"
-                     data-tip={tooltipData()}>
+                     data-tip={externalTooltipData ? externalTooltipData[name] : internalTooltipData()}>
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
                          stroke="currentColor" class="h-6 w-6">
                         <path stroke-linecap="round" stroke-linejoin="round"
