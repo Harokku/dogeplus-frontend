@@ -23,7 +23,7 @@ export const textColor = {
 /**
  * Button hover color constants for different categories.
  * Each category has a specific hover color for visual distinction.
- * 
+ *
  * SRA: Servizio Risposta Allarme (Alarm Response Service)
  * SRL: Servizio Risposta Locale (Local Response Service)
  * SRM: Servizio Risposta Mobile (Mobile Response Service)
@@ -55,17 +55,17 @@ export const borderColors = Object.freeze({
  * Background color constants for assessment cards in different swimlanes.
  * These colors represent different incident levels or categories in the assessment view.
  * Colors are defined in OKLCH format for better color perception and accessibility.
- * 
- * ALLARME: Alarm level (blue)
- * EMERGENZA: Emergency level (purple)
+ *
+ * ALLARME: Alarm level (light blue)
+ * EMERGENZA: Emergency level (blue)
  * BIANCA: White level (off-white) - Lowest severity
  * VERDE: Green level (green) - Low severity
  * GIALLA: Yellow level (yellow) - Medium severity
  * ROSSA: Red level (red) - High severity
  */
 export const assessmentCardBG = Object.freeze({
-    ALLARME: "oklch(60.9% 0.126 221.723)",    // Blue for Alarm level
-    EMERGENZA: "oklch(54.6% 0.245 262.881)",  // Purple for Emergency level
+    ALLARME: "oklch(60.9% 0.126 221.723)",    // Light Blue for Alarm level
+    EMERGENZA: "oklch(54.6% 0.245 262.881)",  // Blue for Emergency level
     BIANCA: "oklch(86.9% 0.005 56.366)",      // Off-white for White level (lowest severity)
     VERDE: "oklch(62.7% 0.194 149.214)",      // Green for Green level (low severity)
     GIALLA: "oklch(79.5% 0.184 86.047)",      // Yellow for Yellow level (medium severity)

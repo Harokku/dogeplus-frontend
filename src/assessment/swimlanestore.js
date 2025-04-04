@@ -1,22 +1,58 @@
+/**
+ * SwimlaneStore.js
+ * 
+ * This file implements a store for managing swimlanes in the assessment view.
+ * It provides functionality for initializing swimlane data, moving cards between lanes,
+ * and updating task information for events.
+ * 
+ * The store uses SolidJS's createSignal for reactive state management and
+ * handles the complex logic of card movement between different severity levels.
+ */
 import {createSignal} from "solid-js";
 import {postEscalateEvent} from "../dataService/eventOverviewService.js";
 import {addNotification, notificationPriorities} from "../store/notificationStore.js";
 
+/**
+ * Creates and returns a store for managing swimlane state.
+ * 
+ * @returns {Object} An object containing methods to interact with the swimlane state.
+ */
 export function createStore() {
-    // our reactive state
+    // Create a reactive state array to hold the swimlane data
     const [state, setState] = createSignal([]);
 
-    // methods to interact with the state
+    // Return methods to interact with the state
     return {
+        /**
+         * Returns the current state of the swimlanes.
+         * 
+         * @returns {Array} The current swimlane state.
+         */
         getState: () => state(),
+
+        /**
+         * Initializes the store with provided swimlane data.
+         * 
+         * @param {Array} data - The initial swimlane data to set in the store.
+         */
         initializeStore: (data) => {
             setState(data)
         },
+
+        /**
+         * Moves a card from one lane to another, handling the complex logic of
+         * escalation and de-escalation between different severity levels.
+         * 
+         * @param {string} cardId - The ID of the card to move.
+         * @param {string} laneId - The ID of the destination lane.
+         * @param {string|null} incidentLevel - The incident level section ID if moving to an incident lane.
+         * @returns {Promise<void>} - A promise that resolves when the move operation is complete.
+         */
         moveCardToLane: async (cardId, laneId, incidentLevel = null) => {
-            let lanes = state() // Get the current lanes;
-            let card // To store the card being moved;
-            let initialLaneId // The original lane where the card was found
-            let initialSectionId = null; // The original section within a lane (if applicable);
+            let lanes = state(); // Get the current lanes
+            let card; // To store the card being moved
+            let initialLaneId; // The original lane where the card was found
+            let initialSectionId = null; // The original section within a lane (if applicable)
 
             // Find and remove card from its current lane
             lanes = lanes.map(lane => {
@@ -64,7 +100,21 @@ export function createStore() {
             // Determine the action (escalation or deescalation)
             let action;
 
-            // Define severity order for all levels
+            /**
+             * Severity order mapping for all levels.
+             * This defines the hierarchy of severity from lowest (10) to highest (60).
+             * Used to determine if a card move is an escalation or de-escalation.
+             * 
+             * Main swimlanes:
+             * - allarme (10): Alarm level
+             * - emergenza (20): Emergency level
+             * 
+             * Incidente sublanes (in ascending severity):
+             * - bianca (30): White level (lowest severity)
+             * - verde (40): Green level
+             * - gialla (50): Yellow level
+             * - rossa (60): Red level (highest severity)
+             */
             const severityOrder = {
                 // Main swimlanes
                 'allarme': 10,
@@ -76,7 +126,14 @@ export function createStore() {
                 'rossa': 60
             };
 
-            // Define a function to compare severity levels
+            /**
+             * Compares two severity levels and returns their difference.
+             * A positive result indicates an escalation, negative indicates de-escalation.
+             * 
+             * @param {string} level1 - The first severity level to compare.
+             * @param {string} level2 - The second severity level to compare.
+             * @returns {number} - The difference between severity levels.
+             */
             const compareSeverity = (level1, level2) => {
                 return severityOrder[level1] - severityOrder[level2];
             };
@@ -176,6 +233,14 @@ export function createStore() {
             }
 
         },
+        /**
+         * Updates the total number of tasks for a specific event across all swimlanes.
+         * This method finds all cards with the matching event number and updates their
+         * completion.total property by adding the specified number of tasks.
+         * 
+         * @param {number} eventNumber - The event number to update.
+         * @param {number} addedTasks - The number of tasks to add to the current total.
+         */
         updateEventTotalTasks: (eventNumber, addedTasks) => {
             // Get the current state
             const lanes = state();

@@ -20,6 +20,7 @@ import EventNrInput from "./EventNrInput.jsx";
 import TaskList from "../itemlist/TaskList.jsx";
 import CategoriesInput from "./CategoriesInput.jsx";
 import Swimlanes from "../assessment/Swimlanes.jsx";
+import GlobalSwimlanes from "../assessment/GlobalSwimlanes.jsx";
 
 /**
  * Renders the appropriate component based on the current configuration step.
@@ -52,8 +53,13 @@ function ConfigFlow() {
             // case configStep.FINISHED:
             //     return <TaskList/>
             case configStep.FINISHED:
-                // Configuration complete: Show assessment swimlanes
-                return <Swimlanes/>
+                // Check if we're in GLOBALE mode
+                const escalationMode = configStore.central.value
+                if (escalationMode === "GLOBALE") {
+                    return <GlobalSwimlanes/>
+                } else {
+                    return <Swimlanes/>
+                }
         }
     }
 
