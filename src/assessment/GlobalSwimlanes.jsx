@@ -4,6 +4,7 @@ import { getEventOverview } from "../dataService/eventOverviewService.js";
 import { parseEnvToBoolean } from "../utils/varCasting.js";
 import Swimlane from "./Swimlanes.jsx";
 import { assessmentCardBG } from "../theme/bg.js";
+import "../theme/hideScrollBar.css"
 
 /**
  * Transforms the backend data by aggregating cards by central_id.
@@ -145,7 +146,7 @@ function getCentralIdFromCards(cards) {
 
 function GlobalSwimlanes(props) {
     // Default scroll interval is 5 seconds if not provided
-    const scrollInterval = props.scrollInterval || 1;
+    const scrollInterval = props.scrollInterval || 5;
 
     const [sraData, setSraData] = createSignal([]);
     const [srlData, setSrlData] = createSignal([]);
@@ -197,22 +198,47 @@ function GlobalSwimlanes(props) {
     const scrollToNextCard = (quadrantRef, currentIndex, totalCards, setIndexFn) => {
         if (!quadrantRef || totalCards === 0) return;
 
-        // Calculate the next index, looping back to 0 if we reach the end
-        const nextIndex = (currentIndex + 1) % totalCards;
-
         // Get all cards in the quadrant
         const cards = quadrantRef.querySelectorAll('.card');
         if (cards.length === 0) return;
 
+        // Find the first non-visible card
+        const quadrantRect = quadrantRef.getBoundingClientRect();
+        let nextVisibleIndex = -1;
+
+        // Start checking from the card after the current one
+        for (let i = 0; i < cards.length; i++) {
+            // Calculate the index to check, starting from the next card after current
+            const indexToCheck = (currentIndex + 1 + i) % totalCards;
+            const card = cards[indexToCheck];
+            const cardRect = card.getBoundingClientRect();
+
+            // Check if the card is below the visible area or only partially visible
+            // We consider a card non-visible if its top edge is below the bottom of the viewport
+            // or if less than 50% of the card is visible
+            const cardVisibleHeight = Math.min(cardRect.bottom, quadrantRect.bottom) - Math.max(cardRect.top, quadrantRect.top);
+            const isCardFullyVisible = cardVisibleHeight > cardRect.height * 0.5;
+
+            if (!isCardFullyVisible) {
+                nextVisibleIndex = indexToCheck;
+                break;
+            }
+        }
+
+        // If we couldn't find a non-visible card, just go to the next one
+        if (nextVisibleIndex === -1) {
+            nextVisibleIndex = (currentIndex + 1) % totalCards;
+        }
+
         // Get the card to scroll to
-        const cardToScrollTo = cards[nextIndex];
+        const cardToScrollTo = cards[nextVisibleIndex];
         if (!cardToScrollTo) return;
 
         // Scroll to the card with a smooth animation
         cardToScrollTo.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
         // Update the index
-        setIndexFn(nextIndex);
+        setIndexFn(nextVisibleIndex);
     };
 
     // Function to synchronize scrolling across all quadrants
@@ -233,13 +259,24 @@ function GlobalSwimlanes(props) {
     onMount(() => {
         fetchData();
 
-        // Set up the interval for autoscrolling
-        const intervalId = setInterval(() => {
+        // Variable to store the interval ID
+        let intervalId;
+
+        // Trigger the first scroll after the first interval (5 seconds)
+        const initialScrollTimeout = setTimeout(() => {
             syncScroll();
+
+            // Set up the interval for subsequent scrolls
+            intervalId = setInterval(() => {
+                syncScroll();
+            }, scrollInterval * 1000);
         }, scrollInterval * 1000);
 
-        // Clean up the interval when the component unmounts
-        return () => clearInterval(intervalId);
+        // Clean up the timeout and interval when the component unmounts
+        return () => {
+            clearTimeout(initialScrollTimeout);
+            if (intervalId) clearInterval(intervalId);
+        };
     });
 
     return (
@@ -257,7 +294,7 @@ function GlobalSwimlanes(props) {
                     {/* SRA Quadrant */}
                     <div class="border border-gray-300 rounded-lg p-2 overflow-auto">
                         <h2 class="text-xl font-bold mb-2 text-center">SRA</h2>
-                        <div ref={el => sraRef = el} class="h-[calc(100%-2rem)] overflow-auto">
+                        <div ref={el => sraRef = el} class="h-[calc(100%-2rem)] overflow-auto scrollbar-hidden">
                             <QuadrantSwimlane data={sraData()} title="SRA" />
                         </div>
                     </div>
@@ -265,7 +302,7 @@ function GlobalSwimlanes(props) {
                     {/* SRL Quadrant */}
                     <div class="border border-gray-300 rounded-lg p-2 overflow-auto">
                         <h2 class="text-xl font-bold mb-2 text-center">SRL</h2>
-                        <div ref={el => srlRef = el} class="h-[calc(100%-2rem)] overflow-auto">
+                        <div ref={el => srlRef = el} class="h-[calc(100%-2rem)] overflow-auto scrollbar-hidden">
                             <QuadrantSwimlane data={srlData()} title="SRL" />
                         </div>
                     </div>
@@ -273,7 +310,7 @@ function GlobalSwimlanes(props) {
                     {/* SRM Quadrant */}
                     <div class="border border-gray-300 rounded-lg p-2 overflow-auto">
                         <h2 class="text-xl font-bold mb-2 text-center">SRM</h2>
-                        <div ref={el => srmRef = el} class="h-[calc(100%-2rem)] overflow-auto">
+                        <div ref={el => srmRef = el} class="h-[calc(100%-2rem)] overflow-auto scrollbar-hidden">
                             <QuadrantSwimlane data={srmData()} title="SRM" />
                         </div>
                     </div>
@@ -281,7 +318,7 @@ function GlobalSwimlanes(props) {
                     {/* SRP Quadrant */}
                     <div class="border border-gray-300 rounded-lg p-2 overflow-auto">
                         <h2 class="text-xl font-bold mb-2 text-center">SRP</h2>
-                        <div ref={el => srpRef = el} class="h-[calc(100%-2rem)] overflow-auto">
+                        <div ref={el => srpRef = el} class="h-[calc(100%-2rem)] overflow-auto scrollbar-hidden">
                             <QuadrantSwimlane data={srpData()} title="SRP" />
                         </div>
                     </div>
