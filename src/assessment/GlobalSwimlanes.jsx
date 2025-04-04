@@ -153,7 +153,6 @@ function GlobalSwimlanes(props) {
     const [srmData, setSrmData] = createSignal([]);
     const [srpData, setSrpData] = createSignal([]);
     const [isLoading, setIsLoading] = createSignal(true);
-    const [error, setError] = createSignal(null);
 
     // State to track the current scroll position for each quadrant
     const [sraScrollIndex, setSraScrollIndex] = createSignal(0);
@@ -172,7 +171,7 @@ function GlobalSwimlanes(props) {
         setIsLoading(true);
         try {
             const response = await getEventOverview(parseEnvToBoolean(import.meta.env.VITE_MOCK) || false);
-            if (response.result) {
+            if (response.result && response.data && response.data.data && response.data.data.length > 0) {
                 // Process the data
                 const allData = response.data.data;
 
@@ -185,10 +184,20 @@ function GlobalSwimlanes(props) {
                 setSrmData(aggregatedData['SRM'] || []);
                 setSrpData(aggregatedData['SRP'] || []);
             } else {
-                setError("Failed to fetch data");
+                // No data returned, set empty arrays for all quadrants
+                setSraData([]);
+                setSrlData([]);
+                setSrmData([]);
+                setSrpData([]);
             }
         } catch (err) {
-            setError(err.message);
+            // Set empty arrays for all quadrants even in case of error
+            setSraData([]);
+            setSrlData([]);
+            setSrmData([]);
+            setSrpData([]);
+            // Still log the error for debugging purposes
+            console.error("Error fetching data:", err.message);
         } finally {
             setIsLoading(false);
         }
@@ -284,10 +293,6 @@ function GlobalSwimlanes(props) {
             {isLoading() ? (
                 <div class="flex justify-center items-center h-full">
                     <span class="loading loading-spinner loading-lg"></span>
-                </div>
-            ) : error() ? (
-                <div class="alert alert-error">
-                    <span>{error()}</span>
                 </div>
             ) : (
                 <div class="grid grid-cols-2 grid-rows-2 gap-4 h-full">
