@@ -24,37 +24,46 @@ function getMockData() {
     })
 }
 
-// TODO: Adapt the code for incident levels separation
 async function getBackEndData() {
-    // Overview data fetching
-    const dataUrl = `${config.backendURL}/escalation_aggregation/details/${configStore.central.value}`
-    const responseData = await fetch(dataUrl, {
-        method: 'GET',
-        headers: {
-            "accept": "application/json",
+    try {
+        // Overview data fetching
+        const dataUrl = `${config.backendURL}/escalation_aggregation/details/${configStore.central.value || ''}`
+        const responseData = await fetch(dataUrl, {
+            method: 'GET',
+            headers: {
+                "accept": "application/json",
+            }
+        })
+        if (!responseData.ok) {
+            throw new Error(responseData.statusText || 'Failed to fetch data');
         }
-    })
-    if (!responseData.ok) {
-        throw new Error(responseData.statusText);
-    }
 
-    const data = await responseData.json()
+        const data = await responseData.json()
 
-    // Completion ratio data fetching
-    const completionUrl = `${config.backendURL}/completion_aggregation`
-    const responseCompletion = await fetch(completionUrl, {
-        method: 'GET',
-        headers: {
-            "accept": "application/json",
+        // Completion ratio data fetching
+        const completionUrl = `${config.backendURL}/completion_aggregation`
+        const responseCompletion = await fetch(completionUrl, {
+            method: 'GET',
+            headers: {
+                "accept": "application/json",
+            }
+        })
+        if (!responseCompletion.ok) {
+            throw new Error(responseCompletion.statusText || 'Failed to fetch completion data');
         }
-    })
-    if (!responseCompletion.ok) {
-        throw new Error(responseCompletion.statusText);
-    }
-    const completionData = await responseCompletion.json()
+        const completionData = await responseCompletion.json()
 
-    // transform data to requested format and return it
-    return transformResponse(data, completionData)
+        // transform data to requested format and return it
+        return transformResponse(data, completionData)
+    } catch (error) {
+        console.error('Error in getBackEndData:', error);
+        // Return empty data structure to prevent null reference errors
+        return {
+            data: [],
+            length: 0,
+            result: 'Error fetching data'
+        };
+    }
 }
 
 /**
@@ -77,7 +86,11 @@ function capitalize(str) {
  * @return {Object} The transformed response containing the predefined levels and grouped data.
  */
 function transformResponse(serverResponse, completionData) {
-    const {data, result} = serverResponse;
+    // Ensure serverResponse is not null or undefined
+    serverResponse = serverResponse || {};
+    completionData = completionData || {};
+
+    const {data = [], result} = serverResponse;
 
     // Predefined levels
     const predefinedLevels = [
@@ -94,7 +107,8 @@ function transformResponse(serverResponse, completionData) {
         bianca: []
     };
 
-    const groupedData = data.reduce((acc, item) => {
+    // Check if data is null or undefined, and provide a default empty array
+    const groupedData = (data || []).reduce((acc, item) => {
         if (!acc[item.level]) {
             acc[item.level] = [];
         }
@@ -102,38 +116,22 @@ function transformResponse(serverResponse, completionData) {
         return acc;
     }, {});
 
-    // FIXME: Remove after testing
-    // Populate cards for each predefined level
-    // const transformedData = predefinedLevels.map((level) => {
-    //     return {
-    //         id: level.id,
-    //         name: level.name,
-    //         cards: (groupedData[level.name.toLowerCase()] || []).map((item) => ({
-    //             id: item.uuid, // Populate 'id' with 'uuid' field.
-    //             event: item.event_number.toString(), // Convert 'event_number' to string.
-    //             location: item.location,
-    //             location_detail: item.location_detail,
-    //             type: item.type,
-    //             central_id: item.central_id, // Add the 'central_id' field.
-    //             completion: completionData[item.event_number]
-    //         }))
-    //     };
-    // });
 
     // Populate cards for each predefined level
     const transformedData = predefinedLevels.map((level) => {
         if (level.id === '3') {
             // Populate the "Incidente" swimlane with subsections
-            (groupedData['incidente'] || []).forEach((item) => {
-                if (item.incident_level && incidentSections[item.incident_level]) {
+            (groupedData && groupedData['incidente'] ? groupedData['incidente'] : []).forEach((item) => {
+                // Ensure item and incident_level are valid
+                if (item && item.incident_level && incidentSections && incidentSections[item.incident_level]) {
                     incidentSections[item.incident_level].push({
-                        id: item.uuid,
-                        event: item.event_number.toString(),
-                        location: item.location,
-                        location_detail: item.location_detail,
-                        type: item.type,
-                        central_id: item.central_id,
-                        completion: completionData[item.event_number]
+                        id: item.uuid || '',
+                        event: item.event_number ? item.event_number.toString() : '',
+                        location: item.location || '',
+                        location_detail: item.location_detail || '',
+                        type: item.type || '',
+                        central_id: item.central_id || '',
+                        completion: completionData && item.event_number ? completionData[item.event_number] : null
                     });
                 }
             });
@@ -154,30 +152,38 @@ function transformResponse(serverResponse, completionData) {
             return {
                 id: level.id,
                 name: level.name,
-                cards: (groupedData[level.name.toLowerCase()] || []).map((item) => ({
-                    id: item.uuid,
-                    event: item.event_number.toString(),
-                    location: item.location,
-                    location_detail: item.location_detail,
-                    type: item.type,
-                    central_id: item.central_id,
-                    completion: completionData[item.event_number]
+                cards: (groupedData && groupedData[level.name.toLowerCase()] ? groupedData[level.name.toLowerCase()] : []).map((item) => ({
+                    id: item.uuid || '',
+                    event: item.event_number ? item.event_number.toString() : '',
+                    location: item.location || '',
+                    location_detail: item.location_detail || '',
+                    type: item.type || '',
+                    central_id: item.central_id || '',
+                    completion: completionData && item.event_number ? completionData[item.event_number] : null
                 }))
             };
         }
     });
 
 
+    // Ensure transformedData is not null or undefined
+    const finalData = transformedData || [];
+
     return {
-        data: transformedData,
-        length: transformedData.length, // Update length based on transformed data.
-        result: result
+        data: finalData,
+        length: finalData.length, // Update length based on transformed data.
+        result: result || 'No result'
     };
 }
 
 async function postBackEndData(data) {
+    // Ensure data is not null or undefined
+    if (!data) {
+        throw new Error('Data is required');
+    }
+
     // Use the direction from the data object directly
-    const direction = data.direction;
+    const direction = data.direction || 'up';
 
     const url = `${config.backendURL}/escalation_aggregation/${direction}`
 

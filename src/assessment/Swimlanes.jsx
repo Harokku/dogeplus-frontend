@@ -106,7 +106,7 @@ function Swimlane() {
                                         {/* Swimlane info tooltip */}
                                         <div onMouseEnter={fetchTooltipData}
                                              class="absolute right-0 mr-2 h-6 w-6 cursor-help tooltip tooltip-left tooltip-info"
-                                             data-tip={tooltipData()[laneData.name]}>
+                                             data-tip={tooltipData() && tooltipData()[laneData.name] ? tooltipData()[laneData.name] : ''}>
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
                                                  stroke="currentColor" class="h-6 w-6">
                                                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -162,7 +162,7 @@ function Swimlane() {
                                         {/* Swimlane info tooltip */}
                                         <div onMouseEnter={fetchTooltipData}
                                              class="absolute right-0 mr-2 h-6 w-6 cursor-help tooltip tooltip-left tooltip-info"
-                                             data-tip={tooltipData()[laneData.name]}>
+                                             data-tip={tooltipData() && tooltipData()[laneData.name] ? tooltipData()[laneData.name] : ''}>
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
                                                  stroke="currentColor" class="h-6 w-6">
                                                 <path stroke-linecap="round" stroke-linejoin="round"
