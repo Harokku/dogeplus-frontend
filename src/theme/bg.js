@@ -64,10 +64,12 @@ export const borderColors = Object.freeze({
  * ROSSA: Red level (red) - High severity
  */
 export const assessmentCardBG = Object.freeze({
-    ALLARME: "oklch(60.9% 0.126 221.723)",    // Light Blue for Alarm level
-    EMERGENZA: "oklch(54.6% 0.245 262.881)",  // Blue for Emergency level
+
+    ALLARME: "oklch(80.9% 0.105 251.813)",    // Light Blue for Alarm level
+    EMERGENZA: "oklch(81.1% 0.111 293.571)",  // Blue for Emergency level
     BIANCA: "oklch(86.9% 0.005 56.366)",      // Off-white for White level (lowest severity)
-    VERDE: "oklch(62.7% 0.194 149.214)",      // Green for Green level (low severity)
-    GIALLA: "oklch(79.5% 0.184 86.047)",      // Yellow for Yellow level (medium severity)
-    ROSSA: "oklch(63.7% 0.237 25.331)",       // Red for Red level (high severity)
+    VERDE: "oklch(87.1% 0.15 154.449)",      // Green for Green level (low severity)
+    GIALLA: "oklch(87.9% 0.169 91.605)",      // Yellow for Yellow level (medium severity)
+    ROSSA: "oklch(75.8% 0.114 19.571)",       // Red for Red level (high severity)
+
 })

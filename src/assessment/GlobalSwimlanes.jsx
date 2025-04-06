@@ -5,6 +5,7 @@ import { parseEnvToBoolean } from "../utils/varCasting.js";
 import Swimlane from "./Swimlanes.jsx";
 import { assessmentCardBG } from "../theme/bg.js";
 import "../theme/hideScrollBar.css"
+import {getColor, getTextColor} from "../utils/colorsHelper.js";
 
 /**
  * Transforms the backend data by aggregating cards by central_id.
@@ -366,17 +367,17 @@ function QuadrantSwimlane({ data, title }) {
                                     <div class="card shadow-sm p-1 mb-1 rounded-lg text-xs transition-all duration-300 ease-in-out hover:scale-105"
                                          style={{
                                              "background-color": bgColor,
-                                             "color": swimlaneKey === 'ROSSA' || swimlaneKey === 'GIALLA' ? '#FFFFFF' : '#000000'
+                                             "color": getTextColor(bgColor),
                                          }}>
                                         <div class="flex justify-between">
                                             <span class="font-semibold">{card.event}</span>
                                             <span class="text-xs">{card.central_id}</span>
                                         </div>
-                                        <div class="truncate">{card.location} {card.location_detail ? `- ${card.location_detail}` : ''}</div>
+                                        <div class="truncate text-2xl capitalize text-center">{card.location} {card.location_detail ? `- ${card.location_detail}` : ''}</div>
 
                                         {/* Compact layout with type and completion in one line */}
                                         <div class="flex justify-between items-center">
-                                            <span class="text-xs">{card.type}</span>
+                                            <span class="text-xl bold flex-1 text-center">{card.type}</span>
 
                                             {/* Task completion percentage */}
                                             {card.completion && (
@@ -386,11 +387,12 @@ function QuadrantSwimlane({ data, title }) {
 
                                         {/* Task completion progress bar */}
                                         {card.completion && (
-                                            <div class="h-1 w-full bg-gray-300 rounded-full overflow-hidden mt-1">
+                                            <div class="h-3 w-full bg-gray-300 rounded-full overflow-hidden mt-1">
                                                 <div
-                                                    class="h-1 rounded-full bg-green-500"
+                                                    class="h-3 rounded-full"
                                                     style={{
-                                                        "width": `${percentage}%`
+                                                        "width": `${percentage}%`,
+                                                        "background-color": getColor(percentage),
                                                     }}
                                                 ></div>
                                             </div>
