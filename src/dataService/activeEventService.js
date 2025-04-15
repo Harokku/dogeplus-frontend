@@ -81,17 +81,34 @@ function getMockData() {
 }
 
 async function getBackendData() {
-    const url = `${config.backendURL}/active-events/${configStore.central.value}/${configStore.eventNr.value}`
-    const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-            'accept': 'application/json',
-        },
-    })
-    if (!response.ok) {
-        throw new Error(response.statusText)
+    // Check if central and eventNr values are properly initialized
+    if (!configStore.central.value || !configStore.eventNr.value) {
+        console.error('Central or Event Number not initialized');
+        throw new Error('Configuration not complete: Central or Event Number missing');
     }
-    return await response.json()
+
+    const url = `${config.backendURL}/active-events/${configStore.central.value}/${configStore.eventNr.value}`
+    console.log(`Fetching data from: ${url}`);
+
+    try {
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'accept': 'application/json',
+            },
+            // Add a timeout to prevent long-hanging requests
+            signal: AbortSignal.timeout(10000) // 10 second timeout
+        })
+
+        if (!response.ok) {
+            throw new Error(response.statusText)
+        }
+
+        return await response.json()
+    } catch (error) {
+        console.error(`Error fetching data: ${error.message}`);
+        throw error;
+    }
 }
 
 function postMockData() {

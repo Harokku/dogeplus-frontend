@@ -3,40 +3,33 @@ import {createEffect, createMemo, For, onMount} from "solid-js";
 import Task from "./Task.jsx";
 import {getActiveEvent} from "../dataService/dataService.js";
 import {parseEnvToBoolean} from "../utils/varCasting.js";
-import WebSocketStatus, {createWebSocket} from "../ws/WebSocketStatus.jsx";
+import websocketService from "../ws/websocketService.js";
+import {useWebSocketTopic} from "../ws/WebSocketStatus.jsx";
 
 function TaskList() {
+    // Local store
+    const [taskStore, setTaskStore] = createStore([]);
 
-    // Create a reconnecting ws socket with heartbeat and set connection status
-    const { socket, state, states } = createWebSocket();
-    // Monitor ws state and re fetch data if connection is reestablished after a drop
+    // Monitor websocket state and refetch data if connection is reestablished after a drop
     createEffect((prev) => {
-        const isPrevTwoOrThree = [2, 3].includes(prev)
-        const isStateZeroOrOne = [0, 1].includes(state())
+        const currentState = websocketService.getState();
+        const isPrevDisconnected = prev === websocketService.WS_STATES.DISCONNECTED;
+        const isConnected = currentState === websocketService.WS_STATES.CONNECTED;
 
-        if (isPrevTwoOrThree && isStateZeroOrOne) {
+        if (isPrevDisconnected && isConnected) {
             console.info("Connection reestablished, refetching data");
             fetchData();
         }
 
-        return state()
-    }, state())
+        return currentState;
+    }, websocketService.getState());
 
-    // Add an event listener that update local store if en Event Updated message is received over ws
-    socket.addEventListener("message", (msg) => {
-        let data
-        try {
-            data = JSON.parse(msg.data)
-        } catch (err) {
-
-        }
+    // Subscribe to the task_completion_update topic
+    useWebSocketTopic('task_completion_update', (data) => {
         if (data?.Result === "Event Task Updated") {
-            setTaskStore(task => task.uuid === data?.Events.uuid, data?.Events)
+            setTaskStore(task => task.uuid === data?.Events.uuid, data?.Events);
         }
     });
-
-    // Local store
-    const [taskStore, setTaskStore] = createStore([])
 
 
     /**
@@ -47,9 +40,15 @@ function TaskList() {
      * @throws {Error} If an error occurs while fetching the data from the backend.
      */
     const fetchData = async () => {
-        const response = await getActiveEvent(parseEnvToBoolean(import.meta.env.VITE_MOCK) || false)
-        if (response.result) {
-            setTaskStore(response.data.Tasks)
+        try {
+            const response = await getActiveEvent(parseEnvToBoolean(import.meta.env.VITE_MOCK) || false)
+            if (response.result) {
+                setTaskStore(response.data.Tasks)
+            } else if (response.error) {
+                console.error("Error fetching tasks:", response.error)
+            }
+        } catch (error) {
+            console.error("Exception fetching tasks:", error)
         }
     }
 
@@ -75,12 +74,6 @@ function TaskList() {
 
     return (
         <>
-
-
-            {/* WebSocket connection status indicator */}
-            <WebSocketStatus />
-
-            {/*<p>Connection: {states[state()]}</p>*/}
 
             {/*Grid div with column number equal to assignedTo different entries*/}
             <div class="grid grid-flow-col auto-cols-auto gap-4">

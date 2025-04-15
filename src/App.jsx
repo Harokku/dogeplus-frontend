@@ -18,8 +18,10 @@ import {configStore} from "./store/configStore.js";
 import NotificationContainer from "./NotificationContainer.jsx";
 import StepBar from "./navbar/StepBar.jsx";
 import Swimlanes from "./assessment/Swimlanes.jsx";
-import {createSignal} from "solid-js";
+import {createSignal, onMount} from "solid-js";
 import {config} from "./dataService/config.js";
+import websocketService from "./ws/websocketService.js";
+import WebSocketStatus from "./ws/WebSocketStatus.jsx";
 
 /**
  * The main application component that serves as the entry point for the DogePlus frontend.
@@ -28,6 +30,12 @@ import {config} from "./dataService/config.js";
  */
 function App() {
     const [selectedFile, setSelectedFile] = createSignal(null);
+
+    // Connect to WebSocket server when the app mounts
+    onMount(() => {
+        console.log("Connecting to WebSocket server...");
+        websocketService.connect();
+    });
 
     /**
      * Asynchronously handles file selection and uploads the chosen file using a specified upload handler.
@@ -201,6 +209,9 @@ function App() {
 
             {/* Main configuration flow component for user setup */}
             <ConfigFlow/>
+
+            {/* WebSocket connection status indicator */}
+            <WebSocketStatus/>
 
         </>
     )
