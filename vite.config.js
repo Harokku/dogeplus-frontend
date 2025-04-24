@@ -1,6 +1,7 @@
-import { defineConfig } from 'vite'
+import {defineConfig} from 'vite'
 import solid from 'vite-plugin-solid'
 
 export default defineConfig({
-  plugins: [solid()],
+    plugins: [solid()],
+    base: process.env.NODE_ENV === 'production' ? '/app/' : '/',
 })
