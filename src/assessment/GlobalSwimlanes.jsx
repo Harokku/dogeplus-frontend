@@ -1,11 +1,12 @@
 // GlobalSwimlanes.jsx
-import { createSignal, onMount } from "solid-js";
+import { createSignal, onMount, onCleanup } from "solid-js";
 import { getEventOverview } from "../dataService/eventOverviewService.js";
 import { parseEnvToBoolean } from "../utils/varCasting.js";
 import Swimlane from "./Swimlanes.jsx";
 import { assessmentCardBG } from "../theme/bg.js";
 import "../theme/hideScrollBar.css"
 import {getColor, getTextColor} from "../utils/colorsHelper.js";
+import websocketService from "../ws/websocketService.js";
 
 /**
  * Transforms the backend data by aggregating cards by central_id.
@@ -266,11 +267,163 @@ function GlobalSwimlanes(props) {
         scrollToNextCard(srpRef, srpScrollIndex(), srpCards, setSrpScrollIndex);
     };
 
+    // Handler for task_completion_map_update messages
+    const handleTaskCompletionMapUpdate = (data) => {
+        try {
+            // Check if this is a specific event update or a full map update
+            if (data.data && data.data.event_number) {
+                // This is a specific event update
+                const eventNumber = data.data.event_number;
+                const completed = data.data.info.Completed;
+                const total = data.data.info.Total;
+
+                // Update the completion data for this event in all quadrants
+                updateEventCompletion(eventNumber, completed, total);
+            } else if (data.data) {
+                // This is a full map update
+                // Iterate through all events in the data and update their completion
+                for (const [eventNumber, info] of Object.entries(data.data)) {
+                    if (info && typeof info.Completed !== 'undefined' && typeof info.Total !== 'undefined') {
+                        updateEventCompletion(parseInt(eventNumber), info.Completed, info.Total);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error("Error handling task completion map update:", error);
+        }
+    };
+
+    // Handler for event_updates messages
+    const handleEventUpdates = (data) => {
+        try {
+            // Validate that we received a proper event update
+            if (data && data.message === "Overview added successfully") {
+                console.log("Received event update:", data.data);
+                // If we receive an event update, refresh the data to get the latest state
+                fetchData();
+            }
+        } catch (error) {
+            console.error("Error handling event update:", error);
+        }
+    };
+
+    // Function to update the completion data for a specific event
+    const updateEventCompletion = (eventNumber, completed, total) => {
+        try {
+            // Validate input parameters
+            if (typeof eventNumber !== 'number' || typeof completed !== 'number' || typeof total !== 'number') {
+                console.error("Invalid parameters for updateEventCompletion:", { eventNumber, completed, total });
+                return;
+            }
+
+            // Helper function to update cards in a dataset
+            const updateCardsInDataset = (dataset, setDatasetFn) => {
+                if (!Array.isArray(dataset)) {
+                    console.error("Dataset is not an array:", dataset);
+                    return;
+                }
+
+                let dataUpdated = false;
+
+                try {
+                    // Create a deep copy of the dataset
+                    const updatedDataset = dataset.map(laneData => {
+                        if (!laneData || !Array.isArray(laneData.cards)) {
+                            return laneData;
+                        }
+
+                        // Create a deep copy of the lane data
+                        const updatedLaneData = { ...laneData };
+
+                        // Update cards that match the event number
+                        updatedLaneData.cards = laneData.cards.map(card => {
+                            if (card && card.event_number === eventNumber) {
+                                dataUpdated = true;
+                                // Create a deep copy of the card with updated completion data
+                                return {
+                                    ...card,
+                                    completion: {
+                                        completed: completed,
+                                        total: total
+                                    }
+                                };
+                            }
+                            return card;
+                        });
+
+                        return updatedLaneData;
+                    });
+
+                    // Only update the state if data was actually changed
+                    if (dataUpdated) {
+                        setDatasetFn(updatedDataset);
+                    }
+                } catch (error) {
+                    console.error("Error updating cards in dataset:", error);
+                }
+            };
+
+            // Update cards in all quadrants
+            updateCardsInDataset(sraData(), setSraData);
+            updateCardsInDataset(srlData(), setSrlData);
+            updateCardsInDataset(srmData(), setSrmData);
+            updateCardsInDataset(srpData(), setSrpData);
+
+            if (completed === total) {
+                console.log(`Event ${eventNumber} tasks completed: ${completed}/${total}`);
+            } else {
+                console.log(`Event ${eventNumber} tasks progress: ${completed}/${total}`);
+            }
+        } catch (error) {
+            console.error("Error in updateEventCompletion:", error);
+        }
+    };
+
     onMount(() => {
         fetchData();
 
         // Variable to store the interval ID
         let intervalId;
+        // Variables to store unsubscribe functions
+        let taskCompletionUnsubscribe = null;
+        let eventUpdatesUnsubscribe = null;
+
+        // Function to set up WebSocket subscriptions
+        const setupWebSocketSubscriptions = () => {
+            try {
+                // Connect to WebSocket if not already connected
+                if (websocketService.getState() !== websocketService.WS_STATES.CONNECTED) {
+                    websocketService.connect();
+                }
+
+                // Wait a short time to ensure connection is established
+                setTimeout(() => {
+                    try {
+                        // Check if connection is established
+                        if (websocketService.getState() === websocketService.WS_STATES.CONNECTED) {
+                            console.log("WebSocket connected, subscribing to topics...");
+
+                            // Subscribe to the required topics
+                            taskCompletionUnsubscribe = websocketService.subscribe('task_completion_map_update', handleTaskCompletionMapUpdate);
+                            eventUpdatesUnsubscribe = websocketService.subscribe('event_updates', handleEventUpdates);
+
+                            console.log("Subscribed to WebSocket topics: task_completion_map_update, event_updates");
+                        } else {
+                            console.warn("WebSocket not connected, retrying in 2 seconds...");
+                            // Retry after 2 seconds
+                            setTimeout(setupWebSocketSubscriptions, 2000);
+                        }
+                    } catch (error) {
+                        console.error("Error subscribing to WebSocket topics:", error);
+                    }
+                }, 500);
+            } catch (error) {
+                console.error("Error setting up WebSocket connection:", error);
+            }
+        };
+
+        // Set up WebSocket subscriptions
+        setupWebSocketSubscriptions();
 
         // Trigger the first scroll after the first interval (5 seconds)
         const initialScrollTimeout = setTimeout(() => {
@@ -283,10 +436,29 @@ function GlobalSwimlanes(props) {
         }, scrollInterval * 1000);
 
         // Clean up the timeout and interval when the component unmounts
-        return () => {
+        onCleanup(() => {
             clearTimeout(initialScrollTimeout);
             if (intervalId) clearInterval(intervalId);
-        };
+
+            // Unsubscribe from WebSocket topics
+            if (taskCompletionUnsubscribe) {
+                try {
+                    taskCompletionUnsubscribe();
+                    console.log("Unsubscribed from task_completion_map_update");
+                } catch (error) {
+                    console.error("Error unsubscribing from task_completion_map_update:", error);
+                }
+            }
+
+            if (eventUpdatesUnsubscribe) {
+                try {
+                    eventUpdatesUnsubscribe();
+                    console.log("Unsubscribed from event_updates");
+                } catch (error) {
+                    console.error("Error unsubscribing from event_updates:", error);
+                }
+            }
+        });
     });
 
     return (
