@@ -270,12 +270,17 @@ function GlobalSwimlanes(props) {
     // Handler for task_completion_map_update messages
     const handleTaskCompletionMapUpdate = (data) => {
         try {
+            // Log the entire WebSocket message
+            console.log("Received task_completion_map_update:", JSON.stringify(data, null, 2));
+
             // Check if this is a specific event update or a full map update
             if (data.data && data.data.event_number) {
                 // This is a specific event update
                 const eventNumber = data.data.event_number;
                 const completed = data.data.info.Completed;
                 const total = data.data.info.Total;
+
+                console.log(`Processing event update: Event ${eventNumber}, Completion: ${completed}/${total}`);
 
                 // Update the completion data for this event in all quadrants
                 updateEventCompletion(eventNumber, completed, total);
@@ -323,13 +328,16 @@ function GlobalSwimlanes(props) {
                     return;
                 }
 
+                // Log the dataset structure to see what we're working with
+                console.log("Dataset structure:", JSON.stringify(dataset, null, 2));
+
                 let dataUpdated = false;
 
                 try {
                     // Create a deep copy of the dataset
                     const updatedDataset = dataset.map(laneData => {
                         if (!laneData || !Array.isArray(laneData.cards)) {
-                            return laneData;
+                            return { ...laneData };
                         }
 
                         // Create a deep copy of the lane data
@@ -337,8 +345,34 @@ function GlobalSwimlanes(props) {
 
                         // Update cards that match the event number
                         updatedLaneData.cards = laneData.cards.map(card => {
-                            if (card && card.event_number === eventNumber) {
+                            // Log the card to see its structure
+                            console.log(`Processing card:`, card);
+
+                            // Try different ways to extract the event number from card.event
+                            let cardEventNumber = null;
+
+                            // 1. If card.event is exactly the event number as a string
+                            if (card && card.event && card.event === String(eventNumber)) {
+                                cardEventNumber = eventNumber;
+                                console.log(`Direct match: card.event "${card.event}" equals eventNumber "${eventNumber}"`);
+                            } 
+                            // 2. If card.event is a number as a string that can be parsed
+                            else if (card && card.event && !isNaN(parseInt(card.event)) && parseInt(card.event) === eventNumber) {
+                                cardEventNumber = parseInt(card.event);
+                                console.log(`Parsed match: parseInt(card.event) "${parseInt(card.event)}" equals eventNumber "${eventNumber}"`);
+                            }
+                            // 3. If card.event is in the format "Event 123"
+                            else if (card && card.event && typeof card.event === 'string') {
+                                const match = card.event.match(/Event (\d+)/);
+                                if (match && parseInt(match[1]) === eventNumber) {
+                                    cardEventNumber = parseInt(match[1]);
+                                    console.log(`Regex match: card.event "${card.event}" contains eventNumber "${eventNumber}"`);
+                                }
+                            }
+
+                            if (cardEventNumber === eventNumber) {
                                 dataUpdated = true;
+                                console.log(`Found matching card for event ${eventNumber}:`, card.event);
                                 // Create a deep copy of the card with updated completion data
                                 return {
                                     ...card,
@@ -348,15 +382,17 @@ function GlobalSwimlanes(props) {
                                     }
                                 };
                             }
-                            return card;
+                            return { ...card };  // Always create a new object for each card
                         });
 
                         return updatedLaneData;
                     });
 
-                    // Only update the state if data was actually changed
+                    // Always update the state to ensure reactivity
+                    setDatasetFn([...updatedDataset]);
+
                     if (dataUpdated) {
-                        setDatasetFn(updatedDataset);
+                        console.log(`Updated state for event ${eventNumber} with completion ${completed}/${total}`);
                     }
                 } catch (error) {
                     console.error("Error updating cards in dataset:", error);
