@@ -1,7 +1,7 @@
 import {defineConfig} from 'vite'
 import solid from 'vite-plugin-solid'
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
     plugins: [solid()],
-    base: process.env.NODE_ENV === 'production' ? '/app/' : '/',
-})
+    base: mode === 'static' ? '/app/' : '/',
+}))
