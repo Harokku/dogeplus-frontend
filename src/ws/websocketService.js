@@ -16,6 +16,7 @@ export const WS_STATES = {
  * WebSocket message types
  */
 export const MESSAGE_TYPES = {
+  HEARTBEAT: 'heartbeat',
   SUBSCRIBE: 'subscribe',
   SUBSCRIBE_ACK: 'subscribe_ack',
   UNSUBSCRIBE: 'unsubscribe',
@@ -47,8 +48,8 @@ export function createWebSocketService() {
   const [reconnectTimer, setReconnectTimer] = createSignal(null);
   
   // Heartbeat settings
-  const heartbeatInterval = 5000; // 5 seconds
-  const heartbeatTimeout = 7500; // 7.5 seconds
+  const heartbeatInterval = 15000; // 15 seconds
+  const heartbeatTimeout = 20000; // 20 seconds
   const [heartbeatTimer, setHeartbeatTimer] = createSignal(null);
   const [heartbeatTimeoutTimer, setHeartbeatTimeoutTimer] = createSignal(null);
   
@@ -212,6 +213,17 @@ export function createWebSocketService() {
     } catch (error) {
       console.error('Error parsing WebSocket message:', error);
       return;
+    }
+
+    // Handle heartbeat
+    if (data.type === MESSAGE_TYPES.HEARTBEAT) {
+      if (socket() && socket().readyState === WebSocket.OPEN) {
+        const response = {
+          type: "heartbeat",
+          timestamp: Math.floor(Date.now() / 1000) // Current Unix timestamp
+        };
+        socket().send(JSON.stringify(response));
+      }
     }
     
     // Handle subscription acknowledgments
