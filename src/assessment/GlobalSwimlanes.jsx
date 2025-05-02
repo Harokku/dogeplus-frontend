@@ -1,16 +1,97 @@
 // GlobalSwimlanes.jsx
-import { createSignal, onMount, onCleanup } from "solid-js";
+import { createSignal, onMount, onCleanup, createMemo, For, Show } from "solid-js";
 import { getEventOverview } from "../dataService/eventOverviewService.js";
 import { parseEnvToBoolean } from "../utils/varCasting.js";
-import Swimlane from "./Swimlanes.jsx";
 import { assessmentCardBG } from "../theme/bg.js";
 import "../theme/hideScrollBar.css"
-import {getColor, getTextColor} from "../utils/colorsHelper.js";
+import { getColor, getTextColor } from "../utils/colorsHelper.js";
 import websocketService from "../ws/websocketService.js";
+
+// TaskProgressBar Component
+const TaskProgressBar = (props) => {
+    const percentage = createMemo(() => {
+        if (!props.completion) return 0;
+        return Math.round((props.completion.completed / props.completion.total) * 100);
+    });
+
+    return (
+        <Show when={props.completion}>
+            <div class="flex items-center gap-2">
+                <span class="text-xs">{percentage()}%</span>
+                <div class="h-3 flex-1 bg-gray-300 rounded-full overflow-hidden">
+                    <div
+                        class="h-3 rounded-full transition-all duration-300"
+                        style={{
+                            "width": `${percentage()}%`,
+                            "background-color": getColor(percentage()),
+                        }}
+                    />
+                </div>
+            </div>
+        </Show>
+    );
+};
+
+// Card Component
+const EventCard = (props) => {
+    const swimlaneKey = props.swimlaneKey.toUpperCase();
+    const bgColor = assessmentCardBG[swimlaneKey] || assessmentCardBG.BIANCA;
+
+    return (
+        <div class="card shadow-sm p-1 mb-1 rounded-lg text-xs transition-all duration-300 ease-in-out hover:scale-105"
+             style={{
+                 "background-color": bgColor,
+                 "color": getTextColor(bgColor),
+             }}>
+            <div class="flex justify-between">
+                <span class="font-semibold">{props.card.event}</span>
+                <span class="text-xs">{props.card.central_id}</span>
+            </div>
+            <div class="truncate text-2xl capitalize text-center">
+                {props.card.location} {props.card.location_detail ? `- ${props.card.location_detail}` : ''}
+            </div>
+            <div class="text-xl bold text-center">{props.card.type}</div>
+            <TaskProgressBar completion={props.card.completion} />
+        </div>
+    );
+};
+
+// QuadrantSwimlane Component
+const QuadrantSwimlane = (props) => {
+    return (
+        <div class="h-full">
+            <For each={props.data}>
+                {(laneData) => (
+                    <div class="mb-2">
+                        <div class="border border-gray-300 rounded-lg p-1 bg-gray-50">
+                            <h3 class="text-sm font-bold text-center">
+                                {laneData.central_id ? `${laneData.central_id} - ` : ''}{laneData.name}
+                            </h3>
+                            <div class="mt-1">
+                                <For each={laneData.cards}>
+                                    {(card) => {
+                                        const swimlane = laneData.swimlane ||
+                                            (laneData.name.toLowerCase().includes('allarme') ? 'allarme' :
+                                             laneData.name.toLowerCase().includes('emergenza') ? 'emergenza' :
+                                             laneData.name.toLowerCase().includes('rossa') ? 'rossa' :
+                                             laneData.name.toLowerCase().includes('gialla') ? 'gialla' :
+                                             laneData.name.toLowerCase().includes('verde') ? 'verde' : 'bianca');
+
+                                        return <EventCard card={card} swimlaneKey={swimlane} />;
+                                    }}
+                                </For>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </For>
+        </div>
+    );
+};
 
 /**
  * Transforms the backend data by aggregating cards by central_id.
- * 
+ *
  * @param {Array} data - The original data from the backend
  * @returns {Object} An object with central_id as keys and arrays of swimlane data as values
  */
@@ -85,7 +166,7 @@ function aggregateDataByCentralId(data) {
 /**
  * Transforms the backend data by organizing cards by swimlane type (allarme, emergenza, incidente).
  * For incidente, it aggregates all rossa, gialla, verde, and bianca sections.
- * 
+ *
  * @param {Array} data - The original data from the backend
  * @returns {Object} An object with swimlane types as keys and arrays of cards as values
  */
@@ -123,11 +204,11 @@ function organizeDataBySwimlaneType(data) {
                 ...laneData,
                 central_id: laneData.central_id || getCentralIdFromCards(laneData.cards)
             });
-        } else if (laneName.includes('incidente') || 
-                  laneName.includes('rossa') || 
-                  laneName.includes('gialla') || 
-                  laneName.includes('verde') || 
-                  laneName.includes('bianca')) {
+        } else if (laneName.includes('incidente') ||
+            laneName.includes('rossa') ||
+            laneName.includes('gialla') ||
+            laneName.includes('verde') ||
+            laneName.includes('bianca')) {
             result['incidente'].push({
                 ...laneData,
                 central_id: laneData.central_id || getCentralIdFromCards(laneData.cards)
@@ -246,7 +327,7 @@ function GlobalSwimlanes(props) {
         if (!cardToScrollTo) return;
 
         // Scroll to the card with a smooth animation
-        cardToScrollTo.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        cardToScrollTo.scrollIntoView({behavior: 'smooth', block: 'nearest'});
 
         // Update the index
         setIndexFn(nextVisibleIndex);
@@ -312,107 +393,51 @@ function GlobalSwimlanes(props) {
         }
     };
 
-    // Function to update the completion data for a specific event
+    // Modified updateEventCompletion function
     const updateEventCompletion = (eventNumber, completed, total) => {
         try {
-            // Validate input parameters
             if (typeof eventNumber !== 'number' || typeof completed !== 'number' || typeof total !== 'number') {
-                console.error("Invalid parameters for updateEventCompletion:", { eventNumber, completed, total });
+                console.error("Invalid parameters for updateEventCompletion:", {eventNumber, completed, total});
                 return;
             }
 
-            // Helper function to update cards in a dataset
-            const updateCardsInDataset = (dataset, setDatasetFn) => {
-                if (!Array.isArray(dataset)) {
-                    console.error("Dataset is not an array:", dataset);
-                    return;
-                }
-
-                // Log the dataset structure to see what we're working with
-                console.log("Dataset structure:", JSON.stringify(dataset, null, 2));
-
-                let dataUpdated = false;
-
-                try {
-                    // Create a deep copy of the dataset
-                    const updatedDataset = dataset.map(laneData => {
-                        if (!laneData || !Array.isArray(laneData.cards)) {
-                            return { ...laneData };
+            const updateDataset = (dataset, setDataset) => {
+                const newData = dataset.map(lane => ({
+                    ...lane,
+                    cards: lane.cards.map(card => {
+                        const cardEventNumber = getCardEventNumber(card, eventNumber);
+                        if (cardEventNumber === eventNumber) {
+                            return {
+                                ...card,
+                                completion: { completed, total }
+                            };
                         }
+                        return card;
+                    })
+                }));
 
-                        // Create a deep copy of the lane data
-                        const updatedLaneData = { ...laneData };
-
-                        // Update cards that match the event number
-                        updatedLaneData.cards = laneData.cards.map(card => {
-                            // Log the card to see its structure
-                            console.log(`Processing card:`, card);
-
-                            // Try different ways to extract the event number from card.event
-                            let cardEventNumber = null;
-
-                            // 1. If card.event is exactly the event number as a string
-                            if (card && card.event && card.event === String(eventNumber)) {
-                                cardEventNumber = eventNumber;
-                                console.log(`Direct match: card.event "${card.event}" equals eventNumber "${eventNumber}"`);
-                            } 
-                            // 2. If card.event is a number as a string that can be parsed
-                            else if (card && card.event && !isNaN(parseInt(card.event)) && parseInt(card.event) === eventNumber) {
-                                cardEventNumber = parseInt(card.event);
-                                console.log(`Parsed match: parseInt(card.event) "${parseInt(card.event)}" equals eventNumber "${eventNumber}"`);
-                            }
-                            // 3. If card.event is in the format "Event 123"
-                            else if (card && card.event && typeof card.event === 'string') {
-                                const match = card.event.match(/Event (\d+)/);
-                                if (match && parseInt(match[1]) === eventNumber) {
-                                    cardEventNumber = parseInt(match[1]);
-                                    console.log(`Regex match: card.event "${card.event}" contains eventNumber "${eventNumber}"`);
-                                }
-                            }
-
-                            if (cardEventNumber === eventNumber) {
-                                dataUpdated = true;
-                                console.log(`Found matching card for event ${eventNumber}:`, card.event);
-                                // Create a deep copy of the card with updated completion data
-                                return {
-                                    ...card,
-                                    completion: {
-                                        completed: completed,
-                                        total: total
-                                    }
-                                };
-                            }
-                            return { ...card };  // Always create a new object for each card
-                        });
-
-                        return updatedLaneData;
-                    });
-
-                    // Always update the state to ensure reactivity
-                    setDatasetFn([...updatedDataset]);
-
-                    if (dataUpdated) {
-                        console.log(`Updated state for event ${eventNumber} with completion ${completed}/${total}`);
-                    }
-                } catch (error) {
-                    console.error("Error updating cards in dataset:", error);
-                }
+                // Force a new reference
+                setDataset([...newData]);
             };
 
-            // Update cards in all quadrants
-            updateCardsInDataset(sraData(), setSraData);
-            updateCardsInDataset(srlData(), setSrlData);
-            updateCardsInDataset(srmData(), setSrmData);
-            updateCardsInDataset(srpData(), setSrpData);
+            // Update all datasets
+            updateDataset(sraData(), setSraData);
+            updateDataset(srlData(), setSrlData);
+            updateDataset(srmData(), setSrmData);
+            updateDataset(srpData(), setSrpData);
 
-            if (completed === total) {
-                console.log(`Event ${eventNumber} tasks completed: ${completed}/${total}`);
-            } else {
-                console.log(`Event ${eventNumber} tasks progress: ${completed}/${total}`);
-            }
         } catch (error) {
             console.error("Error in updateEventCompletion:", error);
         }
+    };
+
+    // Helper function to get event number from card
+    const getCardEventNumber = (card, eventNumber) => {
+        if (!card.event) return null;
+        if (card.event === String(eventNumber)) return Number(card.event);
+        if (!isNaN(parseInt(card.event))) return parseInt(card.event);
+        const match = card.event.match(/Event (\d+)/);
+        return match ? parseInt(match[1]) : null;
     };
 
     onMount(() => {
@@ -499,17 +524,18 @@ function GlobalSwimlanes(props) {
 
     return (
         <div class="h-[85vh] overflow-hidden">
-            {isLoading() ? (
-                <div class="flex justify-center items-center h-full">
-                    <span class="loading loading-spinner loading-lg"></span>
-                </div>
-            ) : (
+            <Show when={!isLoading()}
+                  fallback={
+                      <div class="flex justify-center items-center h-full">
+                          <span class="loading loading-spinner loading-lg"></span>
+                      </div>
+                  }>
                 <div class="grid grid-cols-2 grid-rows-2 gap-4 h-full">
                     {/* SRA Quadrant */}
                     <div class="border border-gray-300 rounded-lg p-2 overflow-auto">
                         <h2 class="text-xl font-bold mb-2 text-center">SRA</h2>
                         <div ref={el => sraRef = el} class="h-[calc(100%-2rem)] overflow-auto scrollbar-hidden">
-                            <QuadrantSwimlane data={sraData()} title="SRA" />
+                            <QuadrantSwimlane data={sraData()} />
                         </div>
                     </div>
 
@@ -517,7 +543,7 @@ function GlobalSwimlanes(props) {
                     <div class="border border-gray-300 rounded-lg p-2 overflow-auto">
                         <h2 class="text-xl font-bold mb-2 text-center">SRL</h2>
                         <div ref={el => srlRef = el} class="h-[calc(100%-2rem)] overflow-auto scrollbar-hidden">
-                            <QuadrantSwimlane data={srlData()} title="SRL" />
+                            <QuadrantSwimlane data={srlData()} />
                         </div>
                     </div>
 
@@ -525,7 +551,7 @@ function GlobalSwimlanes(props) {
                     <div class="border border-gray-300 rounded-lg p-2 overflow-auto">
                         <h2 class="text-xl font-bold mb-2 text-center">SRM</h2>
                         <div ref={el => srmRef = el} class="h-[calc(100%-2rem)] overflow-auto scrollbar-hidden">
-                            <QuadrantSwimlane data={srmData()} title="SRM" />
+                            <QuadrantSwimlane data={srmData()} />
                         </div>
                     </div>
 
@@ -533,87 +559,14 @@ function GlobalSwimlanes(props) {
                     <div class="border border-gray-300 rounded-lg p-2 overflow-auto">
                         <h2 class="text-xl font-bold mb-2 text-center">SRP</h2>
                         <div ref={el => srpRef = el} class="h-[calc(100%-2rem)] overflow-auto scrollbar-hidden">
-                            <QuadrantSwimlane data={srpData()} title="SRP" />
+                            <QuadrantSwimlane data={srpData()} />
                         </div>
                     </div>
                 </div>
-            )}
+            </Show>
         </div>
     );
 }
 
-// Helper component for rendering a swimlane within a quadrant
-function QuadrantSwimlane({ data, title }) {
-    return (
-        <div class="h-full">
-            {data.map(laneData => (
-                <div class="mb-2">
-                    <div class="border border-gray-300 rounded-lg p-1 bg-gray-50">
-                        {/* Display central_id in the header for better identification */}
-                        <h3 class="text-sm font-bold text-center">
-                            {laneData.central_id ? `${laneData.central_id} - ` : ''}{laneData.name}
-                        </h3>
-                        <div class="mt-1">
-                            {laneData.cards.map(card => {
-                                // Calculate completion percentage
-                                const percentage = card.completion ? 
-                                    Math.round((card.completion.completed / card.completion.total) * 100) : 0;
-
-                                // Determine swimlane for color
-                                const swimlane = laneData.swimlane || 
-                                    (laneData.name.toLowerCase().includes('allarme') ? 'allarme' : 
-                                     laneData.name.toLowerCase().includes('emergenza') ? 'emergenza' : 
-                                     laneData.name.toLowerCase().includes('rossa') ? 'rossa' :
-                                     laneData.name.toLowerCase().includes('gialla') ? 'gialla' :
-                                     laneData.name.toLowerCase().includes('verde') ? 'verde' : 'bianca');
-
-                                // Get background color based on swimlane
-                                const swimlaneKey = swimlane.toUpperCase();
-                                const bgColor = assessmentCardBG[swimlaneKey] || assessmentCardBG.BIANCA;
-
-                                return (
-                                    <div class="card shadow-sm p-1 mb-1 rounded-lg text-xs transition-all duration-300 ease-in-out hover:scale-105"
-                                         style={{
-                                             "background-color": bgColor,
-                                             "color": getTextColor(bgColor),
-                                         }}>
-                                        <div class="flex justify-between">
-                                            <span class="font-semibold">{card.event}</span>
-                                            <span class="text-xs">{card.central_id}</span>
-                                        </div>
-                                        <div class="truncate text-2xl capitalize text-center">{card.location} {card.location_detail ? `- ${card.location_detail}` : ''}</div>
-
-                                        {/* Compact layout with type and completion in one line */}
-                                        <div class="flex justify-between items-center">
-                                            <span class="text-xl bold flex-1 text-center">{card.type}</span>
-
-                                            {/* Task completion percentage */}
-                                            {card.completion && (
-                                                <span class="text-xs">{percentage}%</span>
-                                            )}
-                                        </div>
-
-                                        {/* Task completion progress bar */}
-                                        {card.completion && (
-                                            <div class="h-3 w-full bg-gray-300 rounded-full overflow-hidden mt-1">
-                                                <div
-                                                    class="h-3 rounded-full"
-                                                    style={{
-                                                        "width": `${percentage}%`,
-                                                        "background-color": getColor(percentage),
-                                                    }}
-                                                ></div>
-                                            </div>
-                                        )}
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-                </div>
-            ))}
-        </div>
-    );
-}
 
 export default GlobalSwimlanes;
