@@ -292,6 +292,68 @@ export function createStore() {
 
             // Update the state with the new lanes
             setState(updatedLanes);
+        },
+
+        /**
+         * Updates the completion data for a specific event across all swimlanes.
+         * This method finds all cards with the matching event number and updates their
+         * completion.completed and completion.total properties.
+         * 
+         * @param {number} eventNumber - The event number to update.
+         * @param {number} completed - The number of completed tasks.
+         * @param {number} total - The total number of tasks.
+         */
+        updateEventCompletion: (eventNumber, completed, total) => {
+            // Get the current state
+            const lanes = state();
+
+            // Map through the lanes and update the relevant card
+            const updatedLanes = lanes.map(lane => {
+                // Update cards in the top-level cards array
+                const updatedCards = lane.cards.map(card => {
+                    if (parseInt(card.event) === eventNumber) {
+                        // Update the completion data
+                        return {
+                            ...card,
+                            completion: {
+                                completed,
+                                total
+                            }
+                        };
+                    }
+                    return card;
+                });
+
+                // If the lane has sections (like incidente), update cards in each section
+                let updatedSections = lane.sections;
+                if (lane.sections) {
+                    updatedSections = lane.sections.map(section => {
+                        const updatedSectionCards = section.cards.map(card => {
+                            if (parseInt(card.event) === eventNumber) {
+                                // Update the completion data
+                                return {
+                                    ...card,
+                                    completion: {
+                                        completed,
+                                        total
+                                    }
+                                };
+                            }
+                            return card;
+                        });
+                        return { ...section, cards: updatedSectionCards };
+                    });
+                }
+
+                return {
+                    ...lane,
+                    cards: updatedCards,
+                    sections: updatedSections
+                };
+            });
+
+            // Update the state with the new lanes
+            setState(updatedLanes);
         }
     }
 }
